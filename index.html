@@ -1,0 +1,1608 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Prompt Vault — Personal Prompt Library</title>
+    <meta
+      name="description"
+      content="A modern, self-contained single-page Prompt Vault and Library to store, categorize, search, export/import, and one-click copy AI prompts."
+    />
+    <meta property="og:title" content="Prompt Vault — Personal Prompt Library" />
+    <meta
+      property="og:description"
+      content="A modern, self-contained single-page Prompt Vault and Library to store, categorize, search, export/import, and one-click copy AI prompts."
+    />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <!-- Google Fonts: Poppins -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Tailwind CSS via CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['"Poppins"', 'system-ui', '-apple-system', 'sans-serif']
+            }
+          }
+        }
+      };
+    </script>
+
+    <!-- Lucide Icons via CDN -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+      body {
+        font-family: 'Poppins', sans-serif;
+      }
+      .prompt-scroll {
+        /* Max 6 lines (6 * 1.625rem = 9.75rem) + top/bottom p-4 padding (2rem) = 11.75rem */
+        max-height: calc(6 * 1.625em + 2rem);
+        overflow-y: auto;
+      }
+      .prompt-scroll,
+      .no-scrollbar {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+      }
+      .prompt-scroll::-webkit-scrollbar,
+      .no-scrollbar::-webkit-scrollbar {
+        display: none;
+        width: 0;
+        height: 0;
+      }
+    </style>
+  </head>
+
+  <body class="bg-gray-100 dark:bg-slate-950 font-sans antialiased text-gray-800 dark:text-slate-100">
+    <!-- Full-width container using edge-to-edge horizontal screen space -->
+    <div
+      class="min-h-screen w-full bg-gradient-to-br from-green-100 via-cyan-100 to-blue-200 dark:from-slate-950 dark:via-slate-900 dark:to-cyan-950 p-4 sm:p-6 lg:p-8 font-sans flex flex-col transition-colors duration-200"
+    >
+      <div class="w-full flex flex-col flex-grow">
+        <!-- =================================================================
+             MINIMALIST TOP BAR (Full Width, 3-Zone Contract)
+        ================================================================== -->
+        <header
+          class="w-full flex items-center justify-between gap-8 pb-4 mb-5 border-b border-gray-300/80 dark:border-slate-800"
+        >
+          <!-- Zone 1: Brand Title -->
+          <a
+            href="#top"
+            id="brandResetLink"
+            class="text-lg font-bold text-gray-800 dark:text-white tracking-tight whitespace-nowrap shrink-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded"
+          >
+            Prompt Vault
+          </a>
+
+          <!-- Zone 2: Minimal Utility Links -->
+          <nav
+            aria-label="Vault utilities"
+            class="hidden md:flex items-center gap-6 text-sm font-medium text-gray-600 dark:text-slate-300"
+          >
+            <button
+              type="button"
+              id="navExportBtn"
+              class="hover:text-gray-900 dark:hover:text-white transition-colors whitespace-nowrap shrink-0 cursor-pointer"
+            >
+              Export
+            </button>
+            <button
+              type="button"
+              id="navImportBtn"
+              class="hover:text-gray-900 dark:hover:text-white transition-colors whitespace-nowrap shrink-0 cursor-pointer"
+            >
+              Import
+            </button>
+            <button
+              type="button"
+              id="restoreDefaultsBtn"
+              class="hover:text-gray-900 dark:hover:text-white transition-colors whitespace-nowrap shrink-0 cursor-pointer"
+            >
+              Reset
+            </button>
+            <button
+              type="button"
+              id="themeToggleBtn"
+              aria-label="Toggle color theme"
+              class="hover:text-gray-900 dark:hover:text-white transition-colors whitespace-nowrap shrink-0 cursor-pointer"
+            >
+              <span id="themeToggleLabel">Dark</span>
+            </button>
+          </nav>
+
+          <!-- Zone 3: Primary Action -->
+          <div class="flex items-center gap-2 shrink-0">
+            <button
+              type="button"
+              id="openAddModalBtn"
+              class="px-4 py-1.5 text-sm font-semibold rounded-md shadow-sm transition-colors bg-gray-800 text-white hover:bg-gray-900 dark:bg-blue-600 dark:hover:bg-blue-500 whitespace-nowrap shrink-0 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+            >
+              + Add Prompt
+            </button>
+          </div>
+        </header>
+
+        <!-- =================================================================
+             MAIN WORKSPACE (Full Width Details Format)
+        ================================================================== -->
+        <main id="top" class="w-full flex-grow flex flex-col gap-5">
+          <!-- Hidden File Input for JSON Import -->
+          <input
+            type="file"
+            id="importFileInput"
+            accept=".json,application/json"
+            class="sr-only"
+            aria-label="Upload prompts JSON file"
+          />
+
+          <!-- Search + Category Filter Bar -->
+          <section aria-label="Search and filter controls" class="w-full flex flex-col gap-3">
+            <!-- Row 1: Full-Width Search Input (+ Mobile Utility Controls) -->
+            <div class="w-full flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+              <div class="relative flex-grow flex items-center">
+                <i
+                  data-lucide="search"
+                  class="w-4 h-4 text-gray-500 dark:text-slate-400 absolute left-3.5 pointer-events-none"
+                ></i>
+                <label for="searchInput" class="sr-only">Search prompts</label>
+                <input
+                  type="search"
+                  id="searchInput"
+                  placeholder="Search prompts..."
+                  autocomplete="off"
+                  class="w-full pl-10 pr-16 py-2 bg-white dark:bg-slate-900 border border-gray-300 dark:border-slate-700 rounded-lg shadow-sm text-sm text-gray-800 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+                />
+                <div class="absolute right-2.5 flex items-center gap-1">
+                  <button
+                    type="button"
+                    id="clearSearchBtn"
+                    aria-label="Clear search"
+                    class="hidden px-2 py-0.5 text-xs font-semibold rounded bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-slate-800 dark:text-slate-300 transition-colors cursor-pointer"
+                  >
+                    Clear
+                  </button>
+                </div>
+              </div>
+
+              <!-- Mobile Utility Controls -->
+              <div class="flex md:hidden items-center gap-1.5">
+                <button
+                  type="button"
+                  id="toolbarExportBtn"
+                  aria-label="Export JSON"
+                  class="px-2.5 py-1.5 text-xs font-semibold rounded-md bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-slate-800 dark:text-slate-200 transition-colors cursor-pointer"
+                >
+                  Export
+                </button>
+                <button
+                  type="button"
+                  id="toolbarImportBtn"
+                  aria-label="Import JSON"
+                  class="px-2.5 py-1.5 text-xs font-semibold rounded-md bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-slate-800 dark:text-slate-200 transition-colors cursor-pointer"
+                >
+                  Import
+                </button>
+                <button
+                  type="button"
+                  id="mobileThemeToggleBtn"
+                  aria-label="Switch Theme"
+                  class="px-2.5 py-1.5 text-xs font-semibold rounded-md bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-slate-800 dark:text-slate-200 transition-colors cursor-pointer"
+                >
+                  Theme
+                </button>
+              </div>
+            </div>
+
+            <!-- Row 2: Category Filter Buttons -->
+            <div
+              id="categoryFiltersContainer"
+              role="tablist"
+              aria-label="Filter prompts by category"
+              class="w-full flex items-center gap-2 overflow-x-auto no-scrollbar py-0.5"
+            >
+              <!-- Populated dynamically -->
+            </div>
+          </section>
+
+          <!-- Status Banner -->
+          <div
+            id="statusBanner"
+            role="status"
+            aria-live="polite"
+            class="hidden w-full px-4 py-2.5 rounded-lg border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-sm text-xs font-semibold text-gray-800 dark:text-slate-200 flex items-center justify-between gap-4 transition-all"
+          >
+            <span id="statusBannerText"></span>
+            <button
+              type="button"
+              id="closeStatusBannerBtn"
+              aria-label="Dismiss notification"
+              class="underline text-gray-600 dark:text-slate-400 hover:text-gray-900 cursor-pointer"
+            >
+              Close
+            </button>
+          </div>
+
+          <!-- Prompts Full-Width Details Container -->
+          <section aria-label="Prompts list" class="w-full flex-grow">
+            <div id="promptsContainer" data-testid="prompts-container" class="w-full flex flex-col gap-5">
+              <!-- Populated dynamically -->
+            </div>
+
+            <!-- Empty State -->
+            <div
+              id="emptyStateContainer"
+              class="hidden bg-white/90 dark:bg-slate-900 border border-gray-300 dark:border-slate-800 rounded-lg shadow-sm p-8 text-center w-full my-4"
+            >
+              <p id="emptyStateSubtext" class="text-sm font-medium text-gray-600 dark:text-slate-400 mb-4">
+                No matching prompts.
+              </p>
+              <div class="flex items-center justify-center gap-3">
+                <button
+                  type="button"
+                  id="resetFiltersBtn"
+                  class="px-3 py-1 text-sm font-semibold rounded-md transition-colors bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-slate-800 dark:text-slate-200 cursor-pointer"
+                >
+                  Reset
+                </button>
+                <button
+                  type="button"
+                  id="emptyStateAddBtn"
+                  class="px-3 py-1 text-sm font-semibold rounded-md transition-colors bg-gray-800 text-white hover:bg-gray-900 dark:bg-blue-600 dark:hover:bg-blue-500 cursor-pointer"
+                >
+                  + Add Prompt
+                </button>
+              </div>
+            </div>
+          </section>
+        </main>
+      </div>
+    </div>
+
+    <!-- =====================================================================
+         ADD / EDIT PROMPT MODAL
+    ====================================================================== -->
+    <div
+      id="promptModalOverlay"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="modalTitleText"
+      class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/50 backdrop-blur-sm transition-opacity"
+    >
+      <div
+        class="bg-white dark:bg-slate-900 border border-gray-300 dark:border-slate-700 rounded-lg shadow-xl max-w-lg w-full overflow-hidden flex flex-col max-h-[90vh]"
+      >
+        <div class="px-5 py-3.5 border-b border-gray-200 dark:border-slate-800 flex items-center justify-between">
+          <h2 id="modalTitleText" class="text-base font-bold text-gray-800 dark:text-white">
+            Add Prompt
+          </h2>
+          <button
+            type="button"
+            id="closeModalBtn"
+            aria-label="Close modal"
+            class="p-1 rounded-md text-gray-500 hover:text-gray-800 dark:hover:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+          >
+            <i data-lucide="x" class="w-4 h-4"></i>
+          </button>
+        </div>
+
+        <form id="promptForm" novalidate class="p-5 overflow-y-auto space-y-4">
+          <input type="hidden" id="promptIdInput" value="" />
+
+          <div>
+            <label
+              for="promptTitleInput"
+              class="block text-sm font-bold text-gray-800 dark:text-slate-200 mb-1"
+            >
+              Title
+            </label>
+            <input
+              type="text"
+              id="promptTitleInput"
+              required
+              maxlength="120"
+              placeholder="Prompt title..."
+              class="w-full px-3.5 py-2 text-sm bg-white dark:bg-slate-950 text-gray-800 dark:text-slate-100 border border-gray-300 dark:border-slate-700 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            <p id="titleErrorMsg" class="hidden mt-1 text-xs text-rose-600 font-medium"></p>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label
+                for="promptCategorySelect"
+                class="block text-sm font-bold text-gray-800 dark:text-slate-200 mb-1"
+              >
+                Category
+              </label>
+              <select
+                id="promptCategorySelect"
+                class="w-full px-3.5 py-2 text-sm bg-white dark:bg-slate-950 text-gray-800 dark:text-slate-100 border border-gray-300 dark:border-slate-700 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              ></select>
+            </div>
+
+            <div id="customCategoryWrapper" class="hidden">
+              <label
+                for="customCategoryInput"
+                class="block text-sm font-bold text-gray-800 dark:text-slate-200 mb-1"
+              >
+                New Category
+              </label>
+              <input
+                type="text"
+                id="customCategoryInput"
+                maxlength="40"
+                placeholder="Category name..."
+                class="w-full px-3.5 py-2 text-sm bg-white dark:bg-slate-950 text-gray-800 dark:text-slate-100 border border-gray-300 dark:border-slate-700 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+          </div>
+          <p id="categoryErrorMsg" class="hidden -mt-2 text-xs text-rose-600 font-medium"></p>
+
+          <div>
+            <div class="flex justify-between items-center mb-1">
+              <label
+                for="promptBodyInput"
+                class="block text-sm font-bold text-gray-800 dark:text-slate-200"
+              >
+                Prompt
+              </label>
+              <span id="modalCharCounter" class="text-xs text-gray-600 dark:text-slate-400 font-medium tabular-nums">
+                Chars: 0
+              </span>
+            </div>
+            <textarea
+              id="promptBodyInput"
+              rows="6"
+              required
+              placeholder="Type or paste your prompt here..."
+              class="w-full p-3.5 border border-gray-300 dark:border-slate-700 rounded-lg shadow-sm bg-white dark:bg-slate-950 text-gray-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none text-sm leading-relaxed transition-colors"
+            ></textarea>
+            <p id="bodyErrorMsg" class="hidden mt-1 text-xs text-rose-600 font-medium"></p>
+          </div>
+
+          <div class="pt-3 border-t border-gray-200 dark:border-slate-800 flex items-center justify-end gap-2.5">
+            <button
+              type="button"
+              id="cancelModalBtn"
+              class="px-3 py-1.5 text-sm font-semibold rounded-md transition-colors bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-slate-800 dark:text-slate-300 cursor-pointer"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              id="savePromptSubmitBtn"
+              class="px-4 py-1.5 text-sm font-semibold rounded-md transition-colors bg-gray-800 text-white hover:bg-gray-900 dark:bg-blue-600 dark:hover:bg-blue-500 cursor-pointer"
+            >
+              Save
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- =====================================================================
+         DELETE CONFIRMATION MODAL
+    ====================================================================== -->
+    <div
+      id="deleteModalOverlay"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="deleteModalTitle"
+      class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/50 backdrop-blur-sm transition-opacity"
+    >
+      <div class="bg-white dark:bg-slate-900 border border-gray-300 dark:border-slate-700 rounded-lg shadow-xl max-w-sm w-full p-5">
+        <h2 id="deleteModalTitle" class="text-base font-bold text-gray-800 dark:text-white mb-1.5">
+          Delete Prompt?
+        </h2>
+        <p class="text-sm text-gray-600 dark:text-slate-400 mb-5">
+          Remove <strong id="deletePromptName" class="text-gray-800 dark:text-white font-semibold"></strong>?
+        </p>
+        <div class="flex items-center justify-end gap-2.5">
+          <button
+            type="button"
+            id="cancelDeleteBtn"
+            class="px-3 py-1 text-sm font-semibold rounded-md transition-colors bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-slate-800 dark:text-slate-300 cursor-pointer"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            id="confirmDeleteBtn"
+            class="px-3 py-1 text-sm font-semibold rounded-md transition-colors bg-rose-600 text-white hover:bg-rose-700 cursor-pointer"
+          >
+            Delete
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- =====================================================================
+         DELETE CATEGORY CONFIRMATION MODAL
+    ====================================================================== -->
+    <div
+      id="deleteCategoryModalOverlay"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="deleteCategoryModalTitle"
+      class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/50 backdrop-blur-sm transition-opacity"
+    >
+      <div class="bg-white dark:bg-slate-900 border border-gray-300 dark:border-slate-700 rounded-lg shadow-xl max-w-md w-full p-5">
+        <h2 id="deleteCategoryModalTitle" class="text-base font-bold text-gray-800 dark:text-white mb-1.5">
+          Delete Category?
+        </h2>
+        <p id="deleteCategoryModalDesc" class="text-sm text-gray-600 dark:text-slate-400 mb-5"></p>
+        <div class="flex flex-wrap items-center justify-end gap-2">
+          <button
+            type="button"
+            id="cancelDeleteCategoryBtn"
+            class="px-3 py-1.5 text-xs font-semibold rounded-md transition-colors bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-slate-800 dark:text-slate-300 cursor-pointer"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            id="confirmDeleteCategoryKeepPromptsBtn"
+            class="hidden px-3 py-1.5 text-xs font-semibold rounded-md transition-colors bg-gray-800 text-white hover:bg-gray-900 dark:bg-blue-600 dark:hover:bg-blue-500 cursor-pointer"
+          >
+            Delete Category Only
+          </button>
+          <button
+            type="button"
+            id="confirmDeleteCategoryAndPromptsBtn"
+            class="px-3 py-1.5 text-xs font-semibold rounded-md transition-colors bg-rose-600 text-white hover:bg-rose-700 cursor-pointer"
+          >
+            Delete Category
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- =====================================================================
+         VANILLA JAVASCRIPT APPLICATION LOGIC
+    ====================================================================== -->
+    <script>
+      (function () {
+        'use strict';
+
+        const STORAGE_KEYS = {
+          PROMPTS: 'prompt_vault_items_v1',
+          CATEGORIES: 'prompt_vault_categories_v1',
+          THEME: 'prompt_vault_theme_v2'
+        };
+
+        const DEFAULT_CATEGORIES = [
+          'All',
+          'Video & AI',
+          'Coding & Web',
+          'Content Writing',
+          'Design & Art'
+        ];
+
+        const STARTER_PROMPTS = [
+          {
+            id: 'prompt-1',
+            title: 'Cinematic Anamorphic Drone Sequence',
+            category: 'Video & AI',
+            body: 'Generate a slow-motion 24fps cinematic FPV drone tracking shot gliding through a mist-covered brutalist concrete canyon at blue hour. Shot on ARRI Alexa Mini LF with Atlas Orion 40mm anamorphic lens, subtle horizontal amber lens flare, volumetric fog diffusing warm tungsten architectural spotlights, hyper-detailed wet concrete reflections, natural film grain.',
+            createdAt: '2026-10-15T09:30:00.000Z',
+            updatedAt: '2026-10-15T09:30:00.000Z'
+          },
+          {
+            id: 'prompt-2',
+            title: 'TypeScript Zero-Dependency State Store Architect',
+            category: 'Coding & Web',
+            body: 'Act as a Principal Frontend Architect. Design a type-safe, zero-dependency reactive state store in TypeScript (< 120 lines) supporting selector-based subscriptions, structural equality checks, middleware hooks, and LocalStorage persistence with schema migration support. Include strict generics, JSDoc examples, and unit test cases using node:test.',
+            createdAt: '2026-10-18T14:20:00.000Z',
+            updatedAt: '2026-10-18T14:20:00.000Z'
+          },
+          {
+            id: 'prompt-3',
+            title: 'Technical Product Launch Narrative & Memo',
+            category: 'Content Writing',
+            body: 'Write an executive-grade product launch announcement in the style of a clear, high-signal engineering memo. Open with the exact bottleneck developers face today, quantify the latency or workflow tax, introduce our architectural approach without marketing clichés or buzzwords, and walk through 3 concrete before-and-after customer workflows.',
+            createdAt: '2026-10-22T11:10:00.000Z',
+            updatedAt: '2026-10-22T11:10:00.000Z'
+          },
+          {
+            id: 'prompt-4',
+            title: 'Swiss International Typographic Poster Grid',
+            category: 'Design & Art',
+            body: 'Create a Swiss International Style exhibition poster composition inspired by Josef Müller-Brockmann. Strict asymmetric 12-column modular grid, stark matte off-white archival paper texture (#F4F1EA), deep carbon ink (#141413), and a single International Orange accent (#FF3B00). Geometric kinetic arcs intersecting crisp neo-grotesque typography.',
+            createdAt: '2026-10-25T16:45:00.000Z',
+            updatedAt: '2026-10-25T16:45:00.000Z'
+          },
+          {
+            id: 'prompt-5',
+            title: 'PostgreSQL Query Plan & Index Optimization Audit',
+            category: 'Coding & Web',
+            body: 'Analyze the following PostgreSQL EXPLAIN (ANALYZE, BUFFERS) output and table schema. Identify sequential scans, high-cost nested loops, heap fetches, and sort spills. Recommend composite or partial B-Tree/GIN indexes, rewrite correlated subqueries as CTEs or lateral joins, and estimate the I/O reduction.',
+            createdAt: '2026-11-01T08:15:00.000Z',
+            updatedAt: '2026-11-01T08:15:00.000Z'
+          },
+          {
+            id: 'prompt-6',
+            title: 'Industrial Tactile Hardware Product Render',
+            category: 'Design & Art',
+            body: 'Studio macro product photography of a modular portable synthesizer crafted from bead-blasted anodized aluminum and matte polycarbonate keycaps, inspired by Teenage Engineering and Braun 1960s industrial design. Soft diffused overhead bank lighting, crisp chamfered edges, OLED high-contrast amber matrix display, shot on Hasselblad H6D-100c 120mm macro.',
+            createdAt: '2026-11-04T19:00:00.000Z',
+            updatedAt: '2026-11-04T19:00:00.000Z'
+          }
+        ];
+
+        const state = {
+          prompts: [],
+          customCategories: [],
+          activeCategory: 'All',
+          searchQuery: '',
+          copiedTimers: new Map(),
+          pendingDeleteId: null,
+          pendingDeleteCategory: null,
+          theme: 'light'
+        };
+
+        function escapeHtml(str) {
+          return String(str ?? '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+        }
+
+        function getCategoriesList() {
+          const seen = new Set(['all']);
+          const list = ['All'];
+
+          const addCategory = (cat) => {
+            const trimmed = String(cat || '').trim();
+            if (!trimmed) return;
+            const key = trimmed.toLowerCase();
+            if (!seen.has(key)) {
+              seen.add(key);
+              list.push(trimmed);
+            }
+          };
+
+          const baseCategories =
+            Array.isArray(state.customCategories) && state.customCategories.length > 0
+              ? state.customCategories
+              : DEFAULT_CATEGORIES.slice(1);
+
+          baseCategories.forEach(addCategory);
+          state.prompts.forEach((p) => addCategory(p.category));
+          return list;
+        }
+
+        function getFilteredPrompts() {
+          const catNorm = (state.activeCategory || 'All').trim().toLowerCase();
+          const query = (state.searchQuery || '').trim().toLowerCase();
+          const tokens = query ? query.split(/\s+/).filter(Boolean) : [];
+
+          return state.prompts.filter((prompt) => {
+            const matchesCat =
+              catNorm === 'all' ||
+              String(prompt.category || '').trim().toLowerCase() === catNorm;
+            if (!matchesCat) return false;
+            if (tokens.length === 0) return true;
+
+            const haystack = [prompt.title, prompt.category, prompt.body]
+              .join(' ')
+              .toLowerCase();
+
+            return tokens.every((t) => haystack.includes(t));
+          });
+        }
+
+        function parsePromptsPayload(parsed, touchUpdatedAt = false) {
+          const rawList = Array.isArray(parsed)
+            ? parsed
+            : parsed && Array.isArray(parsed.prompts)
+              ? parsed.prompts
+              : null;
+
+          if (!rawList) return null;
+
+          const now = new Date().toISOString();
+          const items = [];
+          rawList.forEach((item, index) => {
+            if (!item || typeof item !== 'object') return;
+            const title = String(item.title || '').trim();
+            const category = String(item.category || '').trim();
+            const body = String(item.body || '').trim();
+            if (!title || !category || !body) return;
+
+            const createdAt = item.createdAt || now;
+            items.push({
+              id: String(item.id || `prompt-${Date.now()}-${index}`).trim(),
+              title,
+              category,
+              body,
+              createdAt,
+              updatedAt: touchUpdatedAt ? now : item.updatedAt || createdAt
+            });
+          });
+
+          const categories =
+            parsed && Array.isArray(parsed.categories)
+              ? parsed.categories
+                  .filter((c) => typeof c === 'string' && c.trim())
+                  .map((c) => c.trim())
+              : [];
+
+          return { items, categories };
+        }
+
+        function mergeRemoteAndLocalPrompts(remotePrompts, localPrompts) {
+          const remoteIds = new Set(remotePrompts.map((p) => p.id));
+          const localById = new Map(localPrompts.map((p) => [p.id, p]));
+
+          // Keep any new prompts added in the browser that haven't been exported to prompts.json yet
+          const localOnly = localPrompts.filter((p) => !remoteIds.has(p.id));
+
+          // For prompts present in prompts.json, use whichever has the newer updatedAt timestamp
+          const mergedRemote = remotePrompts.map((remoteItem) => {
+            const localItem = localById.get(remoteItem.id);
+            if (!localItem) return remoteItem;
+            const remoteTime = Date.parse(remoteItem.updatedAt || '') || 0;
+            const localTime = Date.parse(localItem.updatedAt || '') || 0;
+            return localTime > remoteTime ? localItem : remoteItem;
+          });
+
+          return [...localOnly, ...mergedRemote];
+        }
+
+        async function fetchExternalPromptsJson() {
+          try {
+            const response = await fetch(`./prompts.json?t=${Date.now()}`, {
+              cache: 'no-store'
+            });
+            if (!response.ok) return null;
+            const json = await response.json();
+            return parsePromptsPayload(json);
+          } catch {
+            return null;
+          }
+        }
+
+        function cloneStarterPrompts() {
+          return STARTER_PROMPTS.map((p) => ({ ...p }));
+        }
+
+        async function initDataStore(forceReloadFromJson = false) {
+          try {
+            const savedTheme = localStorage.getItem(STORAGE_KEYS.THEME);
+            state.theme = savedTheme === 'dark' ? 'dark' : 'light';
+          } catch {
+            state.theme = 'light';
+          }
+          applyTheme();
+
+          let localPrompts = null;
+          let localCats = null;
+          if (!forceReloadFromJson) {
+            try {
+              const rawPrompts = localStorage.getItem(STORAGE_KEYS.PROMPTS);
+              const rawCats = localStorage.getItem(STORAGE_KEYS.CATEGORIES);
+              if (rawCats) {
+                const parsedCats = JSON.parse(rawCats);
+                if (Array.isArray(parsedCats) && parsedCats.length > 0) {
+                  localCats = parsedCats.filter((c) => typeof c === 'string');
+                }
+              }
+              if (rawPrompts) {
+                const parsed = JSON.parse(rawPrompts);
+                if (Array.isArray(parsed) && parsed.length > 0) {
+                  localPrompts = parsed;
+                }
+              }
+            } catch {}
+
+            // Render immediately with localStorage or fallback starter prompts
+            state.customCategories = localCats || DEFAULT_CATEGORIES.slice(1);
+            state.prompts = localPrompts || cloneStarterPrompts();
+            renderAll();
+          }
+
+          // Fetch ./prompts.json from the repository (GitHub Pages / web server)
+          const remoteData = await fetchExternalPromptsJson();
+          if (remoteData && remoteData.items.length > 0) {
+            if (forceReloadFromJson || !localPrompts) {
+              state.prompts = remoteData.items;
+              state.customCategories =
+                remoteData.categories.length > 0
+                  ? remoteData.categories
+                  : DEFAULT_CATEGORIES.slice(1);
+            } else if (!localCats) {
+              state.prompts = mergeRemoteAndLocalPrompts(remoteData.items, localPrompts);
+              remoteData.categories.forEach((c) => {
+                if (
+                  !state.customCategories.some(
+                    (existing) => existing.toLowerCase() === c.toLowerCase()
+                  )
+                ) {
+                  state.customCategories.push(c);
+                }
+              });
+            }
+            saveToStorage();
+            renderAll();
+          } else if (forceReloadFromJson) {
+            state.prompts = cloneStarterPrompts();
+            state.customCategories = DEFAULT_CATEGORIES.slice(1);
+            saveToStorage();
+            renderAll();
+          }
+        }
+
+        function saveToStorage() {
+          try {
+            localStorage.setItem(STORAGE_KEYS.PROMPTS, JSON.stringify(state.prompts));
+            localStorage.setItem(
+              STORAGE_KEYS.CATEGORIES,
+              JSON.stringify(state.customCategories)
+            );
+          } catch {}
+        }
+
+        function applyTheme() {
+          const rootEl = document.documentElement;
+          const nextLabel = state.theme === 'dark' ? 'Light' : 'Dark';
+          rootEl.classList.toggle('dark', state.theme === 'dark');
+          const desktopLabel = document.getElementById('themeToggleLabel');
+          if (desktopLabel) desktopLabel.textContent = nextLabel;
+        }
+
+        function toggleTheme() {
+          state.theme = state.theme === 'dark' ? 'light' : 'dark';
+          try {
+            localStorage.setItem(STORAGE_KEYS.THEME, state.theme);
+          } catch {}
+          applyTheme();
+        }
+
+        let statusTimer = null;
+        function showStatus(message) {
+          const banner = document.getElementById('statusBanner');
+          const textEl = document.getElementById('statusBannerText');
+          if (!banner || !textEl) return;
+
+          textEl.textContent = message;
+          banner.classList.remove('hidden');
+
+          if (statusTimer) clearTimeout(statusTimer);
+          statusTimer = setTimeout(() => {
+            banner.classList.add('hidden');
+            statusTimer = null;
+          }, 3000);
+        }
+
+        function renderCategoryFilters() {
+          const container = document.getElementById('categoryFiltersContainer');
+          if (!container) return;
+
+          const categories = getCategoriesList();
+          const counts = { all: state.prompts.length };
+          state.prompts.forEach((p) => {
+            const key = String(p.category || '').trim().toLowerCase();
+            if (key) {
+              counts[key] = (counts[key] || 0) + 1;
+            }
+          });
+
+          const activeNorm = state.activeCategory.toLowerCase();
+
+          container.innerHTML = categories
+            .map((cat) => {
+              const catNorm = cat.toLowerCase();
+              const isActive = activeNorm === catNorm;
+              const count = counts[catNorm] || 0;
+              const isDeletable = catNorm !== 'all';
+
+              const wrapperClasses =
+                'inline-flex items-center rounded-md transition-colors whitespace-nowrap shrink-0 tabular-nums ' +
+                (isActive
+                  ? 'bg-gray-800 text-white shadow-sm dark:bg-blue-600 dark:text-white'
+                  : 'bg-white/85 dark:bg-slate-900 text-gray-700 dark:text-slate-300 border border-gray-300 dark:border-slate-700 hover:bg-gray-200 dark:hover:bg-slate-800');
+
+              return `
+                <div class="${wrapperClasses}">
+                  <button
+                    type="button"
+                    role="tab"
+                    aria-selected="${isActive ? 'true' : 'false'}"
+                    data-category="${escapeHtml(cat)}"
+                    class="pl-3.5 ${isDeletable ? 'pr-1.5' : 'pr-3.5'} py-1 text-xs font-semibold flex items-center gap-1.5 cursor-pointer focus:outline-none"
+                  >
+                    <span>${escapeHtml(cat)}</span>
+                    <span class="opacity-70">${count}</span>
+                  </button>
+                  ${
+                    isDeletable
+                      ? `<button
+                          type="button"
+                          data-delete-category="${escapeHtml(cat)}"
+                          aria-label="Delete category '${escapeHtml(cat)}'"
+                          title="Delete category '${escapeHtml(cat)}'"
+                          class="pr-2 pl-1 py-1 text-xs opacity-60 hover:opacity-100 hover:text-rose-500 dark:hover:text-rose-400 transition-opacity cursor-pointer focus:outline-none"
+                        >
+                          ×
+                        </button>`
+                      : ''
+                  }
+                </div>
+              `;
+            })
+            .join('');
+        }
+
+        const COPY_BTN_BASE_CLASS =
+          'px-3 py-1 text-sm font-semibold rounded-md transition-colors whitespace-nowrap shrink-0 cursor-pointer ';
+        const COPY_BTN_ACTIVE_CLASS = 'bg-emerald-600 text-white';
+        const COPY_BTN_IDLE_CLASS =
+          'bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700';
+
+        function updateCopyButtonDOM(promptId) {
+          const container = document.getElementById('promptsContainer');
+          if (!container) return;
+          const buttons = container.querySelectorAll('button[data-action="copy"]');
+          const isCopied = state.copiedTimers.has(promptId);
+          for (let i = 0; i < buttons.length; i++) {
+            const btn = buttons[i];
+            if (btn.getAttribute('data-id') === promptId) {
+              btn.className =
+                COPY_BTN_BASE_CLASS +
+                (isCopied ? COPY_BTN_ACTIVE_CLASS : COPY_BTN_IDLE_CLASS);
+              btn.textContent = isCopied ? 'Copied! ✓' : 'Copy';
+              break;
+            }
+          }
+        }
+
+        function clearCopiedTimer(promptId) {
+          if (state.copiedTimers.has(promptId)) {
+            clearTimeout(state.copiedTimers.get(promptId));
+            state.copiedTimers.delete(promptId);
+          }
+        }
+
+        function renderPrompts() {
+          const container = document.getElementById('promptsContainer');
+          const emptyState = document.getElementById('emptyStateContainer');
+          const emptySubtext = document.getElementById('emptyStateSubtext');
+          if (!container || !emptyState) return;
+
+          const filtered = getFilteredPrompts();
+
+          if (filtered.length === 0) {
+            container.innerHTML = '';
+            container.className = 'hidden';
+            emptyState.classList.remove('hidden');
+            if (emptySubtext) {
+              emptySubtext.textContent =
+                state.searchQuery || state.activeCategory !== 'All'
+                  ? `No prompts match "${state.searchQuery || state.activeCategory}".`
+                  : 'No prompts in library.';
+            }
+            return;
+          }
+
+          emptyState.classList.add('hidden');
+          container.className = 'w-full flex flex-col gap-5';
+
+          container.innerHTML = filtered
+            .map((prompt) => {
+              const isCopied = state.copiedTimers.has(prompt.id);
+              const charCount = (prompt.body || '').length;
+
+              const copyBtnMarkup = `
+                <button
+                  type="button"
+                  data-action="copy"
+                  data-id="${escapeHtml(prompt.id)}"
+                  aria-label="Copy '${escapeHtml(prompt.title)}'"
+                  class="${COPY_BTN_BASE_CLASS}${
+                    isCopied ? COPY_BTN_ACTIVE_CLASS : COPY_BTN_IDLE_CLASS
+                  }"
+                >
+                  ${isCopied ? 'Copied! ✓' : 'Copy'}
+                </button>
+              `;
+
+              const rowActionsMarkup = `
+                <div class="flex items-center gap-1 shrink-0">
+                  <button
+                    type="button"
+                    data-action="edit"
+                    data-id="${escapeHtml(prompt.id)}"
+                    aria-label="Edit '${escapeHtml(prompt.title)}'"
+                    class="p-1 rounded-md text-gray-500 hover:text-gray-800 dark:text-slate-400 dark:hover:text-white hover:bg-gray-200/70 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+                    title="Edit"
+                  >
+                    <i data-lucide="pencil" class="w-4 h-4 pointer-events-none"></i>
+                  </button>
+                  <button
+                    type="button"
+                    data-action="delete"
+                    data-id="${escapeHtml(prompt.id)}"
+                    aria-label="Delete '${escapeHtml(prompt.title)}'"
+                    class="p-1 rounded-md text-gray-500 hover:text-rose-600 dark:text-slate-400 dark:hover:text-rose-400 hover:bg-gray-200/70 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+                    title="Delete"
+                  >
+                    <i data-lucide="trash-2" class="w-4 h-4 pointer-events-none"></i>
+                  </button>
+                </div>
+              `;
+
+              return `
+                <article
+                  data-prompt-id="${escapeHtml(prompt.id)}"
+                  class="w-full flex flex-col min-h-0"
+                >
+                  <div class="w-full flex justify-between items-center gap-4 mb-2">
+                    <div class="min-w-0 flex flex-wrap items-baseline gap-x-2.5 gap-y-0.5">
+                      <h2 class="text-lg font-bold text-gray-800 dark:text-white">
+                        ${escapeHtml(prompt.title)}
+                      </h2>
+                      <span class="text-xs font-medium text-gray-600 dark:text-slate-400">
+                        ${escapeHtml(prompt.category)}
+                      </span>
+                    </div>
+
+                    <div class="flex items-center gap-4 shrink-0">
+                      <div class="hidden sm:block text-sm text-gray-600 dark:text-slate-400 font-medium tabular-nums">
+                        Chars: <span>${charCount}</span>
+                      </div>
+                      ${rowActionsMarkup}
+                      ${copyBtnMarkup}
+                    </div>
+                  </div>
+
+                  <div
+                    class="prompt-scroll w-full p-4 border border-gray-300 dark:border-slate-700 rounded-lg shadow-sm bg-white dark:bg-slate-900 text-gray-800 dark:text-slate-100 text-sm leading-relaxed whitespace-pre-wrap break-words transition-colors"
+                  >${escapeHtml(prompt.body)}</div>
+                </article>
+              `;
+            })
+            .join('');
+
+          if (window.lucide) {
+            window.lucide.createIcons();
+          }
+        }
+
+        function renderAll() {
+          renderCategoryFilters();
+          renderPrompts();
+        }
+
+        async function copyPromptToClipboard(promptId) {
+          const target = state.prompts.find((p) => p.id === promptId);
+          if (!target) return;
+
+          const fallbackCopy = (text) => {
+            try {
+              const tempArea = document.createElement('textarea');
+              tempArea.value = text;
+              tempArea.style.position = 'fixed';
+              tempArea.style.opacity = '0';
+              document.body.appendChild(tempArea);
+              tempArea.select();
+              document.execCommand('copy');
+              document.body.removeChild(tempArea);
+            } catch {}
+          };
+
+          try {
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+              await navigator.clipboard.writeText(target.body);
+            } else {
+              fallbackCopy(target.body);
+            }
+          } catch {
+            fallbackCopy(target.body);
+          }
+
+          clearCopiedTimer(promptId);
+
+          const timerId = setTimeout(() => {
+            state.copiedTimers.delete(promptId);
+            updateCopyButtonDOM(promptId);
+          }, 2000);
+
+          state.copiedTimers.set(promptId, timerId);
+          updateCopyButtonDOM(promptId);
+        }
+
+        function populateModalCategorySelect(selectedCategory = 'Video & AI') {
+          const selectEl = document.getElementById('promptCategorySelect');
+          const customWrapper = document.getElementById('customCategoryWrapper');
+          const customInput = document.getElementById('customCategoryInput');
+          if (!selectEl || !customWrapper || !customInput) return;
+
+          const categories = getCategoriesList().filter((c) => c !== 'All');
+          selectEl.innerHTML =
+            categories
+              .map(
+                (cat) =>
+                  `<option value="${escapeHtml(cat)}">${escapeHtml(cat)}</option>`
+              )
+              .join('') +
+            `<option value="__custom__">+ Custom category...</option>`;
+
+          const matched = categories.find(
+            (c) => c.toLowerCase() === String(selectedCategory || '').toLowerCase()
+          );
+
+          if (matched) {
+            selectEl.value = matched;
+            customWrapper.classList.add('hidden');
+            customInput.value = '';
+          } else if (selectedCategory && selectedCategory !== '__custom__') {
+            selectEl.value = '__custom__';
+            customWrapper.classList.remove('hidden');
+            customInput.value = selectedCategory;
+          } else {
+            selectEl.value = categories[0] || '__custom__';
+            customWrapper.classList.toggle('hidden', selectEl.value !== '__custom__');
+            customInput.value = '';
+          }
+        }
+
+        function clearModalErrors() {
+          ['titleErrorMsg', 'categoryErrorMsg', 'bodyErrorMsg'].forEach((id) => {
+            const el = document.getElementById(id);
+            if (el) {
+              el.textContent = '';
+              el.classList.add('hidden');
+            }
+          });
+        }
+
+        function openPromptModal(editPrompt = null) {
+          const overlay = document.getElementById('promptModalOverlay');
+          const modalTitle = document.getElementById('modalTitleText');
+          const idInput = document.getElementById('promptIdInput');
+          const titleInput = document.getElementById('promptTitleInput');
+          const bodyInput = document.getElementById('promptBodyInput');
+          const charCounter = document.getElementById('modalCharCounter');
+          const submitBtn = document.getElementById('savePromptSubmitBtn');
+
+          if (!overlay || !titleInput || !bodyInput) return;
+          clearModalErrors();
+
+          if (editPrompt) {
+            modalTitle.textContent = 'Edit Prompt';
+            submitBtn.textContent = 'Update';
+            idInput.value = editPrompt.id;
+            titleInput.value = editPrompt.title;
+            populateModalCategorySelect(editPrompt.category);
+            bodyInput.value = editPrompt.body;
+            if (charCounter) charCounter.textContent = `Chars: ${editPrompt.body.length}`;
+          } else {
+            modalTitle.textContent = 'Add Prompt';
+            submitBtn.textContent = 'Save';
+            idInput.value = '';
+            titleInput.value = '';
+            const defaultCat =
+              state.activeCategory !== 'All' ? state.activeCategory : 'Video & AI';
+            populateModalCategorySelect(defaultCat);
+            bodyInput.value = '';
+            if (charCounter) charCounter.textContent = 'Chars: 0';
+          }
+
+          overlay.classList.remove('hidden');
+          setTimeout(() => titleInput.focus(), 50);
+        }
+
+        function closePromptModal() {
+          const overlay = document.getElementById('promptModalOverlay');
+          if (overlay) overlay.classList.add('hidden');
+        }
+
+        function handlePromptFormSubmit(e) {
+          e.preventDefault();
+          clearModalErrors();
+
+          const idInput = document.getElementById('promptIdInput');
+          const titleInput = document.getElementById('promptTitleInput');
+          const categorySelect = document.getElementById('promptCategorySelect');
+          const customCategoryInput = document.getElementById('customCategoryInput');
+          const bodyInput = document.getElementById('promptBodyInput');
+
+          const title = (titleInput.value || '').trim();
+          const category =
+            categorySelect.value === '__custom__'
+              ? (customCategoryInput.value || '').trim()
+              : (categorySelect.value || '').trim();
+          const body = (bodyInput.value || '').trim();
+
+          let hasError = false;
+          if (!title) {
+            const el = document.getElementById('titleErrorMsg');
+            el.textContent = 'Prompt title is required.';
+            el.classList.remove('hidden');
+            hasError = true;
+          } else if (title.length > 120) {
+            const el = document.getElementById('titleErrorMsg');
+            el.textContent = 'Prompt title must be 120 characters or fewer.';
+            el.classList.remove('hidden');
+            hasError = true;
+          }
+
+          if (!category || category.toLowerCase() === 'all') {
+            const el = document.getElementById('categoryErrorMsg');
+            el.textContent = 'Please select or enter a valid category name.';
+            el.classList.remove('hidden');
+            hasError = true;
+          } else if (category.length > 40) {
+            const el = document.getElementById('categoryErrorMsg');
+            el.textContent = 'Category name must be 40 characters or fewer.';
+            el.classList.remove('hidden');
+            hasError = true;
+          }
+
+          if (!body) {
+            const el = document.getElementById('bodyErrorMsg');
+            el.textContent = 'Full prompt text is required.';
+            el.classList.remove('hidden');
+            hasError = true;
+          }
+
+          if (hasError) return;
+
+          const existingCategories = getCategoriesList();
+          const matchedCat = existingCategories.find(
+            (c) => c.toLowerCase() === category.toLowerCase()
+          );
+          const finalCategory = matchedCat || category;
+          if (!matchedCat) {
+            state.customCategories.push(finalCategory);
+          }
+
+          const now = new Date().toISOString();
+          const editingId = (idInput.value || '').trim();
+
+          if (editingId) {
+            const idx = state.prompts.findIndex((p) => p.id === editingId);
+            if (idx !== -1) {
+              state.prompts[idx] = {
+                ...state.prompts[idx],
+                title,
+                category: finalCategory,
+                body,
+                updatedAt: now
+              };
+            }
+            showStatus(`Updated "${title}".`);
+          } else {
+            const newPrompt = {
+              id: `prompt-${Date.now()}`,
+              title,
+              category: finalCategory,
+              body,
+              createdAt: now,
+              updatedAt: now
+            };
+            state.prompts.unshift(newPrompt);
+            showStatus(`Added "${title}".`);
+          }
+
+          saveToStorage();
+          closePromptModal();
+          renderAll();
+        }
+
+        function openDeleteModal(promptId) {
+          const target = state.prompts.find((p) => p.id === promptId);
+          if (!target) return;
+          state.pendingDeleteId = promptId;
+          const nameEl = document.getElementById('deletePromptName');
+          const overlay = document.getElementById('deleteModalOverlay');
+          if (nameEl) nameEl.textContent = `"${target.title}"`;
+          if (overlay) overlay.classList.remove('hidden');
+        }
+
+        function closeDeleteModal() {
+          state.pendingDeleteId = null;
+          const overlay = document.getElementById('deleteModalOverlay');
+          if (overlay) overlay.classList.add('hidden');
+        }
+
+        function confirmDeletePrompt() {
+          if (!state.pendingDeleteId) return;
+          const deletedId = state.pendingDeleteId;
+          const target = state.prompts.find((p) => p.id === deletedId);
+          clearCopiedTimer(deletedId);
+          state.prompts = state.prompts.filter((p) => p.id !== deletedId);
+          saveToStorage();
+          closeDeleteModal();
+          renderAll();
+          if (target) {
+            showStatus(`Deleted "${target.title}".`);
+          }
+        }
+
+        function openDeleteCategoryModal(categoryName) {
+          const catTrimmed = String(categoryName || '').trim();
+          if (!catTrimmed || catTrimmed.toLowerCase() === 'all') return;
+
+          state.pendingDeleteCategory = catTrimmed;
+          const count = state.prompts.filter(
+            (p) => String(p.category || '').trim().toLowerCase() === catTrimmed.toLowerCase()
+          ).length;
+
+          const overlay = document.getElementById('deleteCategoryModalOverlay');
+          const descEl = document.getElementById('deleteCategoryModalDesc');
+          const keepBtn = document.getElementById('confirmDeleteCategoryKeepPromptsBtn');
+          const deleteAllBtn = document.getElementById('confirmDeleteCategoryAndPromptsBtn');
+
+          if (!overlay || !descEl || !keepBtn || !deleteAllBtn) return;
+
+          if (count > 0) {
+            const allCats = getCategoriesList().filter(
+              (c) => c !== 'All' && c.toLowerCase() !== catTrimmed.toLowerCase()
+            );
+            const fallbackCat = allCats[0] || 'General';
+            descEl.innerHTML = `Category <strong class="text-gray-800 dark:text-white font-semibold">"${escapeHtml(
+              catTrimmed
+            )}"</strong> contains <strong>${count}</strong> prompt${
+              count === 1 ? '' : 's'
+            }. Choose whether to move ${
+              count === 1 ? 'it' : 'them'
+            } to <strong class="text-gray-800 dark:text-white font-semibold">"${escapeHtml(
+              fallbackCat
+            )}"</strong> or delete ${count === 1 ? 'it' : 'them'}:`;
+            keepBtn.textContent = `Move to "${fallbackCat}"`;
+            keepBtn.classList.remove('hidden');
+            deleteAllBtn.textContent = `Delete Category & ${count} Prompt${
+              count === 1 ? '' : 's'
+            }`;
+          } else {
+            descEl.innerHTML = `Remove empty category <strong class="text-gray-800 dark:text-white font-semibold">"${escapeHtml(
+              catTrimmed
+            )}"</strong>?`;
+            keepBtn.classList.add('hidden');
+            deleteAllBtn.textContent = 'Delete Category';
+          }
+
+          overlay.classList.remove('hidden');
+        }
+
+        function closeDeleteCategoryModal() {
+          state.pendingDeleteCategory = null;
+          const overlay = document.getElementById('deleteCategoryModalOverlay');
+          if (overlay) overlay.classList.add('hidden');
+        }
+
+        function executeDeleteCategory(deletePromptsInCategory) {
+          const targetCat = state.pendingDeleteCategory;
+          if (!targetCat) return;
+          const targetNorm = targetCat.trim().toLowerCase();
+
+          const currentCats = getCategoriesList().filter(
+            (c) => c.toLowerCase() !== 'all' && c.trim().toLowerCase() !== targetNorm
+          );
+
+          if (deletePromptsInCategory) {
+            state.prompts = state.prompts.filter((p) => {
+              const matches = String(p.category || '').trim().toLowerCase() === targetNorm;
+              if (matches) clearCopiedTimer(p.id);
+              return !matches;
+            });
+            state.customCategories = currentCats;
+            showStatus(`Deleted category "${targetCat}" and its prompts.`);
+          } else {
+            const fallbackCat = currentCats[0] || 'General';
+            if (currentCats.length === 0) {
+              currentCats.push(fallbackCat);
+            }
+            const now = new Date().toISOString();
+            state.prompts = state.prompts.map((p) =>
+              String(p.category || '').trim().toLowerCase() === targetNorm
+                ? { ...p, category: fallbackCat, updatedAt: now }
+                : p
+            );
+            state.customCategories = currentCats;
+            showStatus(`Deleted category "${targetCat}".`);
+          }
+
+          if (state.activeCategory.toLowerCase() === targetNorm) {
+            state.activeCategory = 'All';
+          }
+
+          saveToStorage();
+          closeDeleteCategoryModal();
+          renderAll();
+        }
+
+        function exportPromptsJson() {
+          const payload = {
+            version: '1.0',
+            exportedAt: new Date().toISOString(),
+            categories: getCategoriesList().filter((c) => c !== 'All'),
+            prompts: state.prompts
+          };
+          const blob = new Blob([JSON.stringify(payload, null, 2)], {
+            type: 'application/json'
+          });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = 'prompts.json';
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+          showStatus(`Exported ${state.prompts.length} prompts.`);
+        }
+
+        function handleImportFile(event) {
+          const file = event.target.files && event.target.files[0];
+          if (!file) return;
+
+          const reader = new FileReader();
+          reader.onload = function (loadEvent) {
+            try {
+              const content = String(loadEvent.target.result || '');
+              const parsed = JSON.parse(content);
+              const payload = parsePromptsPayload(parsed, true);
+
+              if (!payload) {
+                throw new Error('JSON must contain a prompts array.');
+              }
+
+              if (payload.items.length === 0) {
+                throw new Error('No valid prompts found in the JSON file.');
+              }
+
+              state.prompts = payload.items;
+              payload.categories.forEach((c) => {
+                if (
+                  c.toLowerCase() !== 'all' &&
+                  !state.customCategories.some(
+                    (existing) => existing.toLowerCase() === c.toLowerCase()
+                  )
+                ) {
+                  state.customCategories.push(c);
+                }
+              });
+              state.activeCategory = 'All';
+              saveToStorage();
+              renderAll();
+              showStatus(`Imported ${payload.items.length} prompts.`);
+            } catch (err) {
+              showStatus(err.message || 'Failed to import JSON file.');
+            } finally {
+              event.target.value = '';
+            }
+          };
+          reader.readAsText(file);
+        }
+
+        function bindEvents() {
+          document
+            .getElementById('themeToggleBtn')
+            ?.addEventListener('click', toggleTheme);
+          document
+            .getElementById('mobileThemeToggleBtn')
+            ?.addEventListener('click', toggleTheme);
+
+          document
+            .getElementById('openAddModalBtn')
+            ?.addEventListener('click', () => openPromptModal(null));
+          document
+            .getElementById('emptyStateAddBtn')
+            ?.addEventListener('click', () => openPromptModal(null));
+
+          document
+            .getElementById('closeModalBtn')
+            ?.addEventListener('click', closePromptModal);
+          document
+            .getElementById('cancelModalBtn')
+            ?.addEventListener('click', closePromptModal);
+          document
+            .getElementById('promptModalOverlay')
+            ?.addEventListener('click', (e) => {
+              if (e.target.id === 'promptModalOverlay') closePromptModal();
+            });
+
+          document
+            .getElementById('promptCategorySelect')
+            ?.addEventListener('change', (e) => {
+              const isCustom = e.target.value === '__custom__';
+              const wrapper = document.getElementById('customCategoryWrapper');
+              const input = document.getElementById('customCategoryInput');
+              if (wrapper) wrapper.classList.toggle('hidden', !isCustom);
+              if (isCustom && input) input.focus();
+            });
+
+          document
+            .getElementById('promptBodyInput')
+            ?.addEventListener('input', (e) => {
+              const counter = document.getElementById('modalCharCounter');
+              if (counter) counter.textContent = `Chars: ${e.target.value.length}`;
+            });
+
+          document
+            .getElementById('promptForm')
+            ?.addEventListener('submit', handlePromptFormSubmit);
+
+          document
+            .getElementById('cancelDeleteBtn')
+            ?.addEventListener('click', closeDeleteModal);
+          document
+            .getElementById('confirmDeleteBtn')
+            ?.addEventListener('click', confirmDeletePrompt);
+          document
+            .getElementById('deleteModalOverlay')
+            ?.addEventListener('click', (e) => {
+              if (e.target.id === 'deleteModalOverlay') closeDeleteModal();
+            });
+
+          // Delete Category Modal Events
+          document
+            .getElementById('cancelDeleteCategoryBtn')
+            ?.addEventListener('click', closeDeleteCategoryModal);
+          document
+            .getElementById('confirmDeleteCategoryKeepPromptsBtn')
+            ?.addEventListener('click', () => executeDeleteCategory(false));
+          document
+            .getElementById('confirmDeleteCategoryAndPromptsBtn')
+            ?.addEventListener('click', () => executeDeleteCategory(true));
+          document
+            .getElementById('deleteCategoryModalOverlay')
+            ?.addEventListener('click', (e) => {
+              if (e.target.id === 'deleteCategoryModalOverlay') {
+                closeDeleteCategoryModal();
+              }
+            });
+
+          document
+            .getElementById('categoryFiltersContainer')
+            ?.addEventListener('click', (e) => {
+              const delBtn = e.target.closest('button[data-delete-category]');
+              if (delBtn) {
+                e.stopPropagation();
+                const catToDelete = delBtn.getAttribute('data-delete-category');
+                if (catToDelete) openDeleteCategoryModal(catToDelete);
+                return;
+              }
+
+              const btn = e.target.closest('button[data-category]');
+              if (!btn) return;
+              state.activeCategory = btn.getAttribute('data-category') || 'All';
+              renderAll();
+            });
+
+          const searchInput = document.getElementById('searchInput');
+          const clearSearchBtn = document.getElementById('clearSearchBtn');
+          searchInput?.addEventListener('input', (e) => {
+            state.searchQuery = e.target.value || '';
+            if (clearSearchBtn) {
+              clearSearchBtn.classList.toggle('hidden', !state.searchQuery);
+            }
+            renderPrompts();
+          });
+
+          clearSearchBtn?.addEventListener('click', () => {
+            state.searchQuery = '';
+            if (searchInput) {
+              searchInput.value = '';
+              searchInput.focus();
+            }
+            clearSearchBtn.classList.add('hidden');
+            renderPrompts();
+          });
+
+          const resetFilters = () => {
+            state.activeCategory = 'All';
+            state.searchQuery = '';
+            if (searchInput) searchInput.value = '';
+            if (clearSearchBtn) clearSearchBtn.classList.add('hidden');
+            renderAll();
+          };
+          document
+            .getElementById('resetFiltersBtn')
+            ?.addEventListener('click', resetFilters);
+          document
+            .getElementById('brandResetLink')
+            ?.addEventListener('click', (e) => {
+              e.preventDefault();
+              resetFilters();
+            });
+
+          document
+            .getElementById('promptsContainer')
+            ?.addEventListener('click', (e) => {
+              const actionEl = e.target.closest('[data-action]');
+              if (!actionEl) return;
+              const action = actionEl.getAttribute('data-action');
+              const id = actionEl.getAttribute('data-id');
+              if (!id) return;
+
+              if (action === 'copy') {
+                copyPromptToClipboard(id);
+              } else if (action === 'edit') {
+                const item = state.prompts.find((p) => p.id === id);
+                if (item) openPromptModal(item);
+              } else if (action === 'delete') {
+                openDeleteModal(id);
+              }
+            });
+
+          const importInput = document.getElementById('importFileInput');
+          document
+            .getElementById('navExportBtn')
+            ?.addEventListener('click', exportPromptsJson);
+          document
+            .getElementById('toolbarExportBtn')
+            ?.addEventListener('click', exportPromptsJson);
+          document
+            .getElementById('navImportBtn')
+            ?.addEventListener('click', () => importInput?.click());
+          document
+            .getElementById('toolbarImportBtn')
+            ?.addEventListener('click', () => importInput?.click());
+          importInput?.addEventListener('change', handleImportFile);
+
+          document
+            .getElementById('restoreDefaultsBtn')
+            ?.addEventListener('click', async () => {
+              state.activeCategory = 'All';
+              state.searchQuery = '';
+              if (searchInput) searchInput.value = '';
+              if (clearSearchBtn) clearSearchBtn.classList.add('hidden');
+              try {
+                localStorage.removeItem(STORAGE_KEYS.PROMPTS);
+                localStorage.removeItem(STORAGE_KEYS.CATEGORIES);
+              } catch {}
+              await initDataStore(true);
+              showStatus('Reloaded prompts from prompts.json.');
+            });
+
+          document
+            .getElementById('closeStatusBannerBtn')
+            ?.addEventListener('click', () => {
+              if (statusTimer) {
+                clearTimeout(statusTimer);
+                statusTimer = null;
+              }
+              document.getElementById('statusBanner')?.classList.add('hidden');
+            });
+
+          window.addEventListener('keydown', (e) => {
+            if (
+              e.key === '/' &&
+              document.activeElement !== searchInput &&
+              !['INPUT', 'TEXTAREA', 'SELECT'].includes(
+                document.activeElement?.tagName || ''
+              )
+            ) {
+              e.preventDefault();
+              searchInput?.focus();
+            } else if (e.key === 'Escape') {
+              closePromptModal();
+              closeDeleteModal();
+              closeDeleteCategoryModal();
+            }
+          });
+        }
+
+        bindEvents();
+        initDataStore(false);
+      })();
+    </script>
+  </body>
+</html>

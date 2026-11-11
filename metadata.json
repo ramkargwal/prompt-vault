@@ -1,0 +1,8 @@
+{
+  "name": "Prompt Vault _ Personal Prompt Library",
+  "description": "A modern, self-contained single-page Prompt Vault and Library to store, categorize, search, export/import, and one-click copy AI prompts.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
