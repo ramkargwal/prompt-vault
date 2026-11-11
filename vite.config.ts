@@ -1,12 +1,37 @@
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
+import fs from 'fs';
 import path from 'path';
 import {defineConfig} from 'vite';
+
+function syncRootPromptsPlugin() {
+  const syncFile = () => {
+    const rootPrompts = path.resolve(__dirname, 'prompts.json');
+    const publicDir = path.resolve(__dirname, 'public');
+    const publicPrompts = path.resolve(publicDir, 'prompts.json');
+    if (fs.existsSync(rootPrompts)) {
+      if (!fs.existsSync(publicDir)) {
+        fs.mkdirSync(publicDir, {recursive: true});
+      }
+      fs.copyFileSync(rootPrompts, publicPrompts);
+    }
+  };
+
+  return {
+    name: 'sync-root-prompts-json',
+    buildStart() {
+      syncFile();
+    },
+    configureServer() {
+      syncFile();
+    },
+  };
+}
 
 export default defineConfig(() => {
   return {
     base: './',
-    plugins: [react(), tailwindcss()],
+    plugins: [syncRootPromptsPlugin(), react(), tailwindcss()],
     resolve: {
       alias: {
         '@': path.resolve(__dirname, '.'),

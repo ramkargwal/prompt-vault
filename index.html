@@ -477,67 +477,34 @@
         'use strict';
 
         const STORAGE_KEYS = {
-          PROMPTS: 'prompt_vault_items_v1',
-          CATEGORIES: 'prompt_vault_categories_v1',
+          PROMPTS: 'prompt_vault_items_v3',
+          CATEGORIES: 'prompt_vault_categories_v3',
+          REMOTE_SNAPSHOT: 'prompt_vault_remote_snapshot_v3',
           THEME: 'prompt_vault_theme_v2'
         };
 
         const DEFAULT_CATEGORIES = [
           'All',
-          'Video & AI',
-          'Coding & Web',
-          'Content Writing',
-          'Design & Art'
+          'Github',
+          'AI Code'
         ];
 
         const STARTER_PROMPTS = [
           {
-            id: 'prompt-1',
-            title: 'Cinematic Anamorphic Drone Sequence',
-            category: 'Video & AI',
-            body: 'Generate a slow-motion 24fps cinematic FPV drone tracking shot gliding through a mist-covered brutalist concrete canyon at blue hour. Shot on ARRI Alexa Mini LF with Atlas Orion 40mm anamorphic lens, subtle horizontal amber lens flare, volumetric fog diffusing warm tungsten architectural spotlights, hyper-detailed wet concrete reflections, natural film grain.',
-            createdAt: '2026-10-15T09:30:00.000Z',
-            updatedAt: '2026-10-15T09:30:00.000Z'
+            id: 'prompt-1794411861619',
+            title: 'Clean ai code',
+            category: 'AI Code',
+            body: 'Act as a Senior Software Engineer specialized in code refactoring and optimization. Your task is to conduct a thorough audit of an existing codebase without changing the functionality, design, or user interface. Focus on identifying and removing genuinely unused code, including unused variables, functions, CSS rules, JavaScript code, and other elements listed in the requirements. Additionally, investigate and fix any errors such as JavaScript, HTML, CSS, or runtime errors. Your process must adhere to the following steps: Audit the code, clean up unnecessary parts, fix identified problems, optimize for performance without changing behavior, and preserve 100% existing functionality. Ensure that final testing confirms the project operates as it did originally, maintaining the same features, workflow, and user experience while minimizing errors and improving code quality.',
+            createdAt: '2026-11-11T15:44:21.619Z',
+            updatedAt: '2026-11-11T15:44:21.619Z'
           },
           {
-            id: 'prompt-2',
-            title: 'TypeScript Zero-Dependency State Store Architect',
-            category: 'Coding & Web',
-            body: 'Act as a Principal Frontend Architect. Design a type-safe, zero-dependency reactive state store in TypeScript (< 120 lines) supporting selector-based subscriptions, structural equality checks, middleware hooks, and LocalStorage persistence with schema migration support. Include strict generics, JSDoc examples, and unit test cases using node:test.',
-            createdAt: '2026-10-18T14:20:00.000Z',
-            updatedAt: '2026-10-18T14:20:00.000Z'
-          },
-          {
-            id: 'prompt-3',
-            title: 'Technical Product Launch Narrative & Memo',
-            category: 'Content Writing',
-            body: 'Write an executive-grade product launch announcement in the style of a clear, high-signal engineering memo. Open with the exact bottleneck developers face today, quantify the latency or workflow tax, introduce our architectural approach without marketing clichés or buzzwords, and walk through 3 concrete before-and-after customer workflows.',
-            createdAt: '2026-10-22T11:10:00.000Z',
-            updatedAt: '2026-10-22T11:10:00.000Z'
-          },
-          {
-            id: 'prompt-4',
-            title: 'Swiss International Typographic Poster Grid',
-            category: 'Design & Art',
-            body: 'Create a Swiss International Style exhibition poster composition inspired by Josef Müller-Brockmann. Strict asymmetric 12-column modular grid, stark matte off-white archival paper texture (#F4F1EA), deep carbon ink (#141413), and a single International Orange accent (#FF3B00). Geometric kinetic arcs intersecting crisp neo-grotesque typography.',
-            createdAt: '2026-10-25T16:45:00.000Z',
-            updatedAt: '2026-10-25T16:45:00.000Z'
-          },
-          {
-            id: 'prompt-5',
-            title: 'PostgreSQL Query Plan & Index Optimization Audit',
-            category: 'Coding & Web',
-            body: 'Analyze the following PostgreSQL EXPLAIN (ANALYZE, BUFFERS) output and table schema. Identify sequential scans, high-cost nested loops, heap fetches, and sort spills. Recommend composite or partial B-Tree/GIN indexes, rewrite correlated subqueries as CTEs or lateral joins, and estimate the I/O reduction.',
-            createdAt: '2026-11-01T08:15:00.000Z',
-            updatedAt: '2026-11-01T08:15:00.000Z'
-          },
-          {
-            id: 'prompt-6',
-            title: 'Industrial Tactile Hardware Product Render',
-            category: 'Design & Art',
-            body: 'Studio macro product photography of a modular portable synthesizer crafted from bead-blasted anodized aluminum and matte polycarbonate keycaps, inspired by Teenage Engineering and Braun 1960s industrial design. Soft diffused overhead bank lighting, crisp chamfered edges, OLED high-contrast amber matrix display, shot on Hasselblad H6D-100c 120mm macro.',
-            createdAt: '2026-11-04T19:00:00.000Z',
-            updatedAt: '2026-11-04T19:00:00.000Z'
+            id: 'prompt-1794411379125',
+            title: 'google ai studio github auto publish',
+            category: 'Github',
+            body: 'You are a DevOps engineer. Optimize the project for GitHub Pages deployment with the following steps:\n1. Update vite.config.js to include `base: \'./\'` to prevent blank screen errors.\n2. Create a GitHub Actions workflow at `.github/workflows/deploy.yml` using `ubuntu-latest` and `actions/deploy-pages@v4`.\n3. In the actions/setup-node step, ensure `cache: \'npm\'` is excluded to avoid crashes if package-lock.json is missing.\n4. Use the command `npm install --legacy-peer-deps` to resolve potential package conflicts.\n5. Generate a standard Vite .gitignore file to avoid uploading temporary files, node_modules, or .env files.\n6. Add README.md file covering all Features',
+            createdAt: '2026-11-11T15:36:19.125Z',
+            updatedAt: '2026-11-11T15:36:19.125Z'
           }
         ];
 
@@ -644,25 +611,6 @@
           return { items, categories };
         }
 
-        function mergeRemoteAndLocalPrompts(remotePrompts, localPrompts) {
-          const remoteIds = new Set(remotePrompts.map((p) => p.id));
-          const localById = new Map(localPrompts.map((p) => [p.id, p]));
-
-          // Keep any new prompts added in the browser that haven't been exported to prompts.json yet
-          const localOnly = localPrompts.filter((p) => !remoteIds.has(p.id));
-
-          // For prompts present in prompts.json, use whichever has the newer updatedAt timestamp
-          const mergedRemote = remotePrompts.map((remoteItem) => {
-            const localItem = localById.get(remoteItem.id);
-            if (!localItem) return remoteItem;
-            const remoteTime = Date.parse(remoteItem.updatedAt || '') || 0;
-            const localTime = Date.parse(localItem.updatedAt || '') || 0;
-            return localTime > remoteTime ? localItem : remoteItem;
-          });
-
-          return [...localOnly, ...mergedRemote];
-        }
-
         async function fetchExternalPromptsJson() {
           try {
             const response = await fetch(`./prompts.json?t=${Date.now()}`, {
@@ -682,6 +630,9 @@
 
         async function initDataStore(forceReloadFromJson = false) {
           try {
+            // Remove legacy v1 cache keys so outdated prompts never override prompts.json
+            localStorage.removeItem('prompt_vault_items_v1');
+            localStorage.removeItem('prompt_vault_categories_v1');
             const savedTheme = localStorage.getItem(STORAGE_KEYS.THEME);
             state.theme = savedTheme === 'dark' ? 'dark' : 'light';
           } catch {
@@ -691,8 +642,10 @@
 
           let localPrompts = null;
           let localCats = null;
+          let lastRemoteSnapshot = null;
           if (!forceReloadFromJson) {
             try {
+              lastRemoteSnapshot = localStorage.getItem(STORAGE_KEYS.REMOTE_SNAPSHOT);
               const rawPrompts = localStorage.getItem(STORAGE_KEYS.PROMPTS);
               const rawCats = localStorage.getItem(STORAGE_KEYS.CATEGORIES);
               if (rawCats) {
@@ -709,7 +662,6 @@
               }
             } catch {}
 
-            // Render immediately with localStorage or fallback starter prompts
             state.customCategories = localCats || DEFAULT_CATEGORIES.slice(1);
             state.prompts = localPrompts || cloneStarterPrompts();
             renderAll();
@@ -717,27 +669,25 @@
 
           // Fetch ./prompts.json from the repository (GitHub Pages / web server)
           const remoteData = await fetchExternalPromptsJson();
-          if (remoteData && remoteData.items.length > 0) {
-            if (forceReloadFromJson || !localPrompts) {
+          if (remoteData) {
+            const currentRemoteSnapshot = JSON.stringify(remoteData);
+            const hasRemoteFileChanged = currentRemoteSnapshot !== lastRemoteSnapshot;
+
+            if (forceReloadFromJson || !localPrompts || hasRemoteFileChanged) {
               state.prompts = remoteData.items;
               state.customCategories =
                 remoteData.categories.length > 0
                   ? remoteData.categories
                   : DEFAULT_CATEGORIES.slice(1);
-            } else if (!localCats) {
-              state.prompts = mergeRemoteAndLocalPrompts(remoteData.items, localPrompts);
-              remoteData.categories.forEach((c) => {
-                if (
-                  !state.customCategories.some(
-                    (existing) => existing.toLowerCase() === c.toLowerCase()
-                  )
-                ) {
-                  state.customCategories.push(c);
-                }
-              });
+              try {
+                localStorage.setItem(
+                  STORAGE_KEYS.REMOTE_SNAPSHOT,
+                  currentRemoteSnapshot
+                );
+              } catch {}
+              saveToStorage();
+              renderAll();
             }
-            saveToStorage();
-            renderAll();
           } else if (forceReloadFromJson) {
             state.prompts = cloneStarterPrompts();
             state.customCategories = DEFAULT_CATEGORIES.slice(1);
@@ -1025,7 +975,7 @@
           updateCopyButtonDOM(promptId);
         }
 
-        function populateModalCategorySelect(selectedCategory = 'Video & AI') {
+        function populateModalCategorySelect(selectedCategory = '') {
           const selectEl = document.getElementById('promptCategorySelect');
           const customWrapper = document.getElementById('customCategoryWrapper');
           const customInput = document.getElementById('customCategoryInput');
@@ -1095,8 +1045,11 @@
             submitBtn.textContent = 'Save';
             idInput.value = '';
             titleInput.value = '';
+            const availableCats = getCategoriesList().filter((c) => c !== 'All');
             const defaultCat =
-              state.activeCategory !== 'All' ? state.activeCategory : 'Video & AI';
+              state.activeCategory !== 'All'
+                ? state.activeCategory
+                : availableCats[0] || DEFAULT_CATEGORIES[1] || '';
             populateModalCategorySelect(defaultCat);
             bodyInput.value = '';
             if (charCounter) charCounter.textContent = 'Chars: 0';
@@ -1567,6 +1520,7 @@
               try {
                 localStorage.removeItem(STORAGE_KEYS.PROMPTS);
                 localStorage.removeItem(STORAGE_KEYS.CATEGORIES);
+                localStorage.removeItem(STORAGE_KEYS.REMOTE_SNAPSHOT);
               } catch {}
               await initDataStore(true);
               showStatus('Reloaded prompts from prompts.json.');
