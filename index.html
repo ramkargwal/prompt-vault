@@ -91,6 +91,15 @@
             aria-label="Vault utilities"
             class="hidden md:flex items-center gap-6 text-sm font-medium text-gray-600 dark:text-slate-300"
           >
+            <a
+              href="https://github.com/ramkargwal/prompt-vault/blob/main/prompts.json"
+              target="_blank"
+              rel="noopener noreferrer"
+              id="navUpdatePageBtn"
+              class="hover:text-gray-900 dark:hover:text-white transition-colors whitespace-nowrap shrink-0 cursor-pointer"
+            >
+              Update Page
+            </a>
             <button
               type="button"
               id="navExportBtn"
@@ -177,7 +186,17 @@
               </div>
 
               <!-- Mobile Utility Controls -->
-              <div class="flex md:hidden items-center gap-1.5">
+              <div class="flex md:hidden flex-wrap items-center gap-1.5">
+                <a
+                  href="https://github.com/ramkargwal/prompt-vault/blob/main/prompts.json"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  id="toolbarUpdatePageBtn"
+                  aria-label="Copy JSON and open GitHub prompts.json"
+                  class="px-2.5 py-1.5 text-xs font-semibold rounded-md bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-slate-800 dark:text-slate-200 transition-colors cursor-pointer"
+                >
+                  Update Page
+                </a>
                 <button
                   type="button"
                   id="toolbarExportBtn"
@@ -1280,14 +1299,44 @@
           renderAll();
         }
 
-        function exportPromptsJson() {
+        function getPromptsJsonString() {
           const payload = {
             version: '1.0',
             exportedAt: new Date().toISOString(),
             categories: getCategoriesList().filter((c) => c !== 'All'),
             prompts: state.prompts
           };
-          const blob = new Blob([JSON.stringify(payload, null, 2)], {
+          return JSON.stringify(payload, null, 2);
+        }
+
+        function copyTextToClipboard(text) {
+          const fallbackCopy = () => {
+            try {
+              const tempArea = document.createElement('textarea');
+              tempArea.value = text;
+              tempArea.style.position = 'fixed';
+              tempArea.style.opacity = '0';
+              document.body.appendChild(tempArea);
+              tempArea.select();
+              document.execCommand('copy');
+              document.body.removeChild(tempArea);
+            } catch {}
+          };
+
+          fallbackCopy();
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(text).catch(() => {});
+          }
+        }
+
+        function handleUpdatePageClick() {
+          const jsonString = getPromptsJsonString();
+          copyTextToClipboard(jsonString);
+          showStatus('Copied JSON to clipboard! Opening GitHub prompts.json...');
+        }
+
+        function exportPromptsJson() {
+          const blob = new Blob([getPromptsJsonString()], {
             type: 'application/json'
           });
           const url = URL.createObjectURL(blob);
@@ -1496,6 +1545,12 @@
             });
 
           const importInput = document.getElementById('importFileInput');
+          document
+            .getElementById('navUpdatePageBtn')
+            ?.addEventListener('click', handleUpdatePageClick);
+          document
+            .getElementById('toolbarUpdatePageBtn')
+            ?.addEventListener('click', handleUpdatePageClick);
           document
             .getElementById('navExportBtn')
             ?.addEventListener('click', exportPromptsJson);
