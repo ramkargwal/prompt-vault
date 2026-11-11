@@ -92,7 +92,7 @@
             class="hidden md:flex items-center gap-6 text-sm font-medium text-gray-600 dark:text-slate-300"
           >
             <a
-              href="https://github.com/ramkargwal/prompt-vault/blob/main/prompts.json"
+              href="https://github.com/ramkargwal/prompt-vault/edit/main/prompts.json"
               target="_blank"
               rel="noopener noreferrer"
               id="navUpdatePageBtn"
@@ -156,10 +156,10 @@
             aria-label="Upload prompts JSON file"
           />
 
-          <!-- Search + Category Filter Bar -->
+          <!-- Search + Category Dropdown Row -->
           <section aria-label="Search and filter controls" class="w-full flex flex-col gap-3">
-            <!-- Row 1: Full-Width Search Input (+ Mobile Utility Controls) -->
             <div class="w-full flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+              <!-- Search Input -->
               <div class="relative flex-grow flex items-center">
                 <i
                   data-lucide="search"
@@ -185,14 +185,35 @@
                 </div>
               </div>
 
+              <!-- Category Dropdown Select in Search Row -->
+              <div class="flex items-center gap-2 shrink-0">
+                <label for="categoryFilterSelect" class="sr-only">Filter prompts by category</label>
+                <select
+                  id="categoryFilterSelect"
+                  aria-label="Filter prompts by category"
+                  class="w-full sm:w-52 px-3.5 py-2 bg-white dark:bg-slate-900 border border-gray-300 dark:border-slate-700 rounded-lg shadow-sm text-sm font-medium text-gray-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors cursor-pointer"
+                >
+                  <!-- Populated dynamically -->
+                </select>
+                <button
+                  type="button"
+                  id="deleteActiveCategoryBtn"
+                  aria-label="Delete selected category"
+                  title="Delete selected category"
+                  class="hidden px-2.5 py-2 text-xs font-semibold rounded-lg border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-gray-500 hover:text-rose-600 dark:text-slate-400 dark:hover:text-rose-400 hover:border-rose-300 dark:hover:border-rose-800 shadow-sm transition-colors cursor-pointer shrink-0"
+                >
+                  <i data-lucide="trash-2" class="w-4 h-4 pointer-events-none"></i>
+                </button>
+              </div>
+
               <!-- Mobile Utility Controls -->
               <div class="flex md:hidden flex-wrap items-center gap-1.5">
                 <a
-                  href="https://github.com/ramkargwal/prompt-vault/blob/main/prompts.json"
+                  href="https://github.com/ramkargwal/prompt-vault/edit/main/prompts.json"
                   target="_blank"
                   rel="noopener noreferrer"
                   id="toolbarUpdatePageBtn"
-                  aria-label="Copy JSON and open GitHub prompts.json"
+                  aria-label="Copy JSON and edit GitHub prompts.json"
                   class="px-2.5 py-1.5 text-xs font-semibold rounded-md bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-slate-800 dark:text-slate-200 transition-colors cursor-pointer"
                 >
                   Update Page
@@ -223,16 +244,6 @@
                 </button>
               </div>
             </div>
-
-            <!-- Row 2: Category Filter Buttons -->
-            <div
-              id="categoryFiltersContainer"
-              role="tablist"
-              aria-label="Filter prompts by category"
-              class="w-full flex items-center gap-2 overflow-x-auto no-scrollbar py-0.5"
-            >
-              <!-- Populated dynamically -->
-            </div>
           </section>
 
           <!-- Status Banner -->
@@ -253,9 +264,9 @@
             </button>
           </div>
 
-          <!-- Prompts Full-Width Details Container -->
+          <!-- Prompts 3-Column Grid Container -->
           <section aria-label="Prompts list" class="w-full flex-grow">
-            <div id="promptsContainer" data-testid="prompts-container" class="w-full flex flex-col gap-5">
+            <div id="promptsContainer" data-testid="prompts-container" class="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
               <!-- Populated dynamically -->
             </div>
 
@@ -386,7 +397,7 @@
               rows="6"
               required
               placeholder="Type or paste your prompt here..."
-              class="w-full p-3.5 border border-gray-300 dark:border-slate-700 rounded-lg shadow-sm bg-white dark:bg-slate-950 text-gray-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none text-sm leading-relaxed transition-colors"
+              class="w-full p-3.5 border border-gray-300 dark:border-slate-700 rounded-lg shadow-sm bg-white dark:bg-slate-950 text-gray-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none text-sm leading-relaxed text-justify transition-colors"
             ></textarea>
             <p id="bodyErrorMsg" class="hidden mt-1 text-xs text-rose-600 font-medium"></p>
           </div>
@@ -505,10 +516,28 @@
         const DEFAULT_CATEGORIES = [
           'All',
           'Github',
-          'AI Code'
+          'AI Code',
+          'office letter',
+          'Botany'
         ];
 
         const STARTER_PROMPTS = [
+          {
+            id: 'prompt-1794415418193',
+            title: 'Plant Texonomy',
+            category: 'Botany',
+            body: 'भूमिका: आप एक बॉटनी विशेषज्ञ/प्रोफेसर हैं। ऊपर दिए गए पौधे का विस्तृत टैक्सोनॉमिक वर्गीकरण (Taxonomic Classification) प्रदान करें:\n\nमूल विवरण: पौधे का सामान्य/स्थानीय नाम तथा पूर्ण वर्गीकरण पदानुक्रम (Domain → Kingdom → Division → Class → Order → Family → Genus → Species)।\nस्तर-वार व्याख्या (Domain से Species तक):\n\nमुख्य वानस्पतिक विशेषताएँ (Botanical Characteristics)।\nReasoning: इस पौधे को इस रैंक में रखने का तार्किक कारण।\nप्रत्येक स्तर पर 2–3 पंक्तियों का संक्षिप्त सारांश।\nतुलनात्मक तालिका (Markdown Table):\n\nसंरचना: Taxonomic Rank | [मुख्य पौधा] | [स्थानीय पौधा 1] | [2] | [3] | [4]\nशर्त: 4 स्थानीय पौधे हिसार (हरियाणा) की जलवायु के हों और मुख्य पौधे के साथ समान Family साझा करते हों। Domain से Species तक पूर्ण डेटा भरें।\nअतिरिक्त सूची: हिसार (हरियाणा) में पाए जाने वाले इसी Family के अन्य सभी ज्ञात पौधों के केवल नाम (बिना विवरण)।\nभाषा निर्देश: सरल व्याख्यात्मक हिंदी; सभी तकनीकी बॉटनिकल शब्दों के साथ ब्रैकेट में अंग्रेजी नाम (English equivalents) अवश्य लिखें।',
+            createdAt: '2026-11-11T16:43:38.193Z',
+            updatedAt: '2026-11-11T16:43:38.193Z'
+          },
+          {
+            id: 'prompt-1794414560955',
+            title: 'Explain Letter',
+            category: 'office letter',
+            body: 'आप एक हिंदी भाषा विशेषज्ञ हैं। एक दस्तावेज़ को पढ़कर उसे अत्यंत सरल और संक्षिप्त हिंदी में समझाएं। निम्नलिखित बिंदुओं को शामिल करें:\n1. दस्तावेज़ कब और किसके द्वारा और किसके लिए जारी किया गया है?\n2. इसका विषय और सरल सारांश क्या है?\n3. इसमें दिए गए मुख्य बिंदु क्या हैं?\nजवाब संक्षिप्त, स्पष्ट और ऐसा होना चाहिए कि एक सामान्य व्यक्ति इसे तुरंत समझ सके। जटिल या कानूनी शब्दों को सरल बनाएं और जवाब को कम से कम शब्दों में रखें। अंत में, इसके मुख्य बिंदुओं का एक छोटा नोट 3-4 लाइनों में तैयार करें जिसे सीधे लोगों को समझाने के लिए उपयोग किया जा सके।',
+            createdAt: '2026-11-11T16:29:20.955Z',
+            updatedAt: '2026-11-11T16:29:20.955Z'
+          },
           {
             id: 'prompt-1794411861619',
             title: 'Clean ai code',
@@ -576,19 +605,24 @@
           const query = (state.searchQuery || '').trim().toLowerCase();
           const tokens = query ? query.split(/\s+/).filter(Boolean) : [];
 
-          return state.prompts.filter((prompt) => {
-            const matchesCat =
-              catNorm === 'all' ||
-              String(prompt.category || '').trim().toLowerCase() === catNorm;
-            if (!matchesCat) return false;
-            if (tokens.length === 0) return true;
+          return state.prompts
+            .filter((prompt) => {
+              const matchesCat =
+                catNorm === 'all'
+                  ? true
+                  : catNorm === '__favorites__'
+                    ? Boolean(prompt.pinned)
+                    : String(prompt.category || '').trim().toLowerCase() === catNorm;
+              if (!matchesCat) return false;
+              if (tokens.length === 0) return true;
 
-            const haystack = [prompt.title, prompt.category, prompt.body]
-              .join(' ')
-              .toLowerCase();
+              const haystack = [prompt.title, prompt.category, prompt.body]
+                .join(' ')
+                .toLowerCase();
 
-            return tokens.every((t) => haystack.includes(t));
-          });
+              return tokens.every((t) => haystack.includes(t));
+            })
+            .sort((a, b) => Number(Boolean(b.pinned)) - Number(Boolean(a.pinned)));
         }
 
         function parsePromptsPayload(parsed, touchUpdatedAt = false) {
@@ -615,6 +649,7 @@
               title,
               category,
               body,
+              pinned: Boolean(item.pinned),
               createdAt,
               updatedAt: touchUpdatedAt ? now : item.updatedAt || createdAt
             });
@@ -758,62 +793,54 @@
         }
 
         function renderCategoryFilters() {
-          const container = document.getElementById('categoryFiltersContainer');
-          if (!container) return;
+          const selectEl = document.getElementById('categoryFilterSelect');
+          const deleteCatBtn = document.getElementById('deleteActiveCategoryBtn');
+          if (!selectEl) return;
 
           const categories = getCategoriesList();
           const counts = { all: state.prompts.length };
+          let pinnedCount = 0;
           state.prompts.forEach((p) => {
+            if (p.pinned) pinnedCount++;
             const key = String(p.category || '').trim().toLowerCase();
             if (key) {
               counts[key] = (counts[key] || 0) + 1;
             }
           });
 
-          const activeNorm = state.activeCategory.toLowerCase();
+          const activeNorm = (state.activeCategory || 'All').toLowerCase();
+          let matchedActive = activeNorm === '__favorites__' ? '__favorites__' : 'All';
 
-          container.innerHTML = categories
-            .map((cat) => {
-              const catNorm = cat.toLowerCase();
-              const isActive = activeNorm === catNorm;
-              const count = counts[catNorm] || 0;
-              const isDeletable = catNorm !== 'all';
+          const optionsHtml = [];
+          categories.forEach((cat) => {
+            const catNorm = cat.toLowerCase();
+            const count = counts[catNorm] || 0;
+            if (catNorm === activeNorm) {
+              matchedActive = cat;
+            }
+            if (catNorm === 'all') {
+              optionsHtml.push(
+                `<option value="All">${escapeHtml(`All Categories (${count})`)}</option>`
+              );
+              optionsHtml.push(
+                `<option value="__favorites__">${escapeHtml(`⭐ Favorites (${pinnedCount})`)}</option>`
+              );
+            } else {
+              optionsHtml.push(
+                `<option value="${escapeHtml(cat)}">${escapeHtml(`${cat} (${count})`)}</option>`
+              );
+            }
+          });
 
-              const wrapperClasses =
-                'inline-flex items-center rounded-md transition-colors whitespace-nowrap shrink-0 tabular-nums ' +
-                (isActive
-                  ? 'bg-gray-800 text-white shadow-sm dark:bg-blue-600 dark:text-white'
-                  : 'bg-white/85 dark:bg-slate-900 text-gray-700 dark:text-slate-300 border border-gray-300 dark:border-slate-700 hover:bg-gray-200 dark:hover:bg-slate-800');
+          selectEl.innerHTML = optionsHtml.join('');
+          selectEl.value = matchedActive;
+          state.activeCategory = matchedActive;
 
-              return `
-                <div class="${wrapperClasses}">
-                  <button
-                    type="button"
-                    role="tab"
-                    aria-selected="${isActive ? 'true' : 'false'}"
-                    data-category="${escapeHtml(cat)}"
-                    class="pl-3.5 ${isDeletable ? 'pr-1.5' : 'pr-3.5'} py-1 text-xs font-semibold flex items-center gap-1.5 cursor-pointer focus:outline-none"
-                  >
-                    <span>${escapeHtml(cat)}</span>
-                    <span class="opacity-70">${count}</span>
-                  </button>
-                  ${
-                    isDeletable
-                      ? `<button
-                          type="button"
-                          data-delete-category="${escapeHtml(cat)}"
-                          aria-label="Delete category '${escapeHtml(cat)}'"
-                          title="Delete category '${escapeHtml(cat)}'"
-                          class="pr-2 pl-1 py-1 text-xs opacity-60 hover:opacity-100 hover:text-rose-500 dark:hover:text-rose-400 transition-opacity cursor-pointer focus:outline-none"
-                        >
-                          ×
-                        </button>`
-                      : ''
-                  }
-                </div>
-              `;
-            })
-            .join('');
+          if (deleteCatBtn) {
+            const isSystemFilter =
+              matchedActive.toLowerCase() === 'all' || matchedActive === '__favorites__';
+            deleteCatBtn.classList.toggle('hidden', isSystemFilter);
+          }
         }
 
         const COPY_BTN_BASE_CLASS =
@@ -846,6 +873,25 @@
           }
         }
 
+        function togglePinPrompt(promptId) {
+          const idx = state.prompts.findIndex((p) => p.id === promptId);
+          if (idx === -1) return;
+          const target = state.prompts[idx];
+          const nextPinned = !target.pinned;
+          state.prompts[idx] = {
+            ...target,
+            pinned: nextPinned,
+            updatedAt: new Date().toISOString()
+          };
+          saveToStorage();
+          renderAll();
+          showStatus(
+            nextPinned
+              ? `Pinned "${target.title}" to favorites.`
+              : `Unpinned "${target.title}".`
+          );
+        }
+
         function renderPrompts() {
           const container = document.getElementById('promptsContainer');
           const emptyState = document.getElementById('emptyStateContainer');
@@ -859,20 +905,30 @@
             container.className = 'hidden';
             emptyState.classList.remove('hidden');
             if (emptySubtext) {
-              emptySubtext.textContent =
-                state.searchQuery || state.activeCategory !== 'All'
-                  ? `No prompts match "${state.searchQuery || state.activeCategory}".`
-                  : 'No prompts in library.';
+              if (state.activeCategory === '__favorites__' && !state.searchQuery) {
+                emptySubtext.textContent =
+                  'No favorite prompts pinned yet. Click ⭐ on any prompt card to pin it.';
+              } else {
+                const label =
+                  state.activeCategory === '__favorites__'
+                    ? 'Favorites'
+                    : state.activeCategory;
+                emptySubtext.textContent =
+                  state.searchQuery || state.activeCategory !== 'All'
+                    ? `No prompts match "${state.searchQuery || label}".`
+                    : 'No prompts in library.';
+              }
             }
             return;
           }
 
           emptyState.classList.add('hidden');
-          container.className = 'w-full flex flex-col gap-5';
+          container.className = 'w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5';
 
           container.innerHTML = filtered
             .map((prompt) => {
               const isCopied = state.copiedTimers.has(prompt.id);
+              const isPinned = Boolean(prompt.pinned);
               const charCount = (prompt.body || '').length;
 
               const copyBtnMarkup = `
@@ -891,6 +947,21 @@
 
               const rowActionsMarkup = `
                 <div class="flex items-center gap-1 shrink-0">
+                  <button
+                    type="button"
+                    data-action="pin"
+                    data-id="${escapeHtml(prompt.id)}"
+                    aria-label="${isPinned ? 'Unpin' : 'Pin'} '${escapeHtml(prompt.title)}'"
+                    aria-pressed="${isPinned ? 'true' : 'false'}"
+                    class="p-1 rounded-md text-sm leading-none ${
+                      isPinned
+                        ? 'text-amber-500 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40'
+                        : 'text-gray-400 hover:text-amber-500 dark:text-slate-500 dark:hover:text-amber-400'
+                    } hover:bg-gray-200/70 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+                    title="${isPinned ? 'Unpin from favorites' : 'Pin to favorites'}"
+                  >
+                    ${isPinned ? '⭐' : '☆'}
+                  </button>
                   <button
                     type="button"
                     data-action="edit"
@@ -914,32 +985,40 @@
                 </div>
               `;
 
+              const boxBorderClass = isPinned
+                ? 'border-amber-400 dark:border-amber-500/80 ring-1 ring-amber-400/30'
+                : 'border-gray-300 dark:border-slate-700';
+
               return `
                 <article
                   data-prompt-id="${escapeHtml(prompt.id)}"
                   class="w-full flex flex-col min-h-0"
                 >
-                  <div class="w-full flex justify-between items-center gap-4 mb-2">
-                    <div class="min-w-0 flex flex-wrap items-baseline gap-x-2.5 gap-y-0.5">
-                      <h2 class="text-lg font-bold text-gray-800 dark:text-white">
-                        ${escapeHtml(prompt.title)}
+                  <div class="w-full flex justify-between items-start gap-2 mb-2">
+                    <div class="min-w-0 flex flex-col">
+                      <h2 class="text-base font-bold text-gray-800 dark:text-white truncate" title="${escapeHtml(prompt.title)}">
+                        ${isPinned ? '<span class="mr-1" aria-hidden="true">⭐</span>' : ''}${escapeHtml(prompt.title)}
                       </h2>
-                      <span class="text-xs font-medium text-gray-600 dark:text-slate-400">
-                        ${escapeHtml(prompt.category)}
-                      </span>
+                      <div class="text-xs font-medium text-gray-600 dark:text-slate-400 flex items-center gap-1.5 truncate">
+                        <button
+                          type="button"
+                          data-action="filter-category"
+                          data-category="${escapeHtml(prompt.category)}"
+                          title="Filter prompts by '${escapeHtml(prompt.category)}'"
+                          class="text-blue-600 dark:text-blue-400 hover:underline font-semibold cursor-pointer truncate focus:outline-none"
+                        >${escapeHtml(prompt.category)}</button>
+                        <span class="shrink-0">· Chars: ${charCount}</span>
+                      </div>
                     </div>
 
-                    <div class="flex items-center gap-4 shrink-0">
-                      <div class="hidden sm:block text-sm text-gray-600 dark:text-slate-400 font-medium tabular-nums">
-                        Chars: <span>${charCount}</span>
-                      </div>
+                    <div class="flex items-center gap-1.5 shrink-0">
                       ${rowActionsMarkup}
                       ${copyBtnMarkup}
                     </div>
                   </div>
 
                   <div
-                    class="prompt-scroll w-full p-4 border border-gray-300 dark:border-slate-700 rounded-lg shadow-sm bg-white dark:bg-slate-900 text-gray-800 dark:text-slate-100 text-sm leading-relaxed whitespace-pre-wrap break-words transition-colors"
+                    class="prompt-scroll flex-grow w-full p-4 border ${boxBorderClass} rounded-lg shadow-sm bg-white dark:bg-slate-900 text-gray-800 dark:text-slate-100 text-sm leading-relaxed text-justify whitespace-pre-wrap break-words transition-colors"
                   >${escapeHtml(prompt.body)}</div>
                 </article>
               `;
@@ -1066,7 +1145,7 @@
             titleInput.value = '';
             const availableCats = getCategoriesList().filter((c) => c !== 'All');
             const defaultCat =
-              state.activeCategory !== 'All'
+              state.activeCategory !== 'All' && state.activeCategory !== '__favorites__'
                 ? state.activeCategory
                 : availableCats[0] || DEFAULT_CATEGORIES[1] || '';
             populateModalCategorySelect(defaultCat);
@@ -1164,6 +1243,7 @@
               title,
               category: finalCategory,
               body,
+              pinned: false,
               createdAt: now,
               updatedAt: now
             };
@@ -1332,7 +1412,7 @@
         function handleUpdatePageClick() {
           const jsonString = getPromptsJsonString();
           copyTextToClipboard(jsonString);
-          showStatus('Copied JSON to clipboard! Opening GitHub prompts.json...');
+          showStatus('Copied JSON to clipboard! Opening GitHub editor for prompts.json...');
         }
 
         function exportPromptsJson() {
@@ -1472,20 +1552,18 @@
             });
 
           document
-            .getElementById('categoryFiltersContainer')
-            ?.addEventListener('click', (e) => {
-              const delBtn = e.target.closest('button[data-delete-category]');
-              if (delBtn) {
-                e.stopPropagation();
-                const catToDelete = delBtn.getAttribute('data-delete-category');
-                if (catToDelete) openDeleteCategoryModal(catToDelete);
-                return;
-              }
-
-              const btn = e.target.closest('button[data-category]');
-              if (!btn) return;
-              state.activeCategory = btn.getAttribute('data-category') || 'All';
+            .getElementById('categoryFilterSelect')
+            ?.addEventListener('change', (e) => {
+              state.activeCategory = e.target.value || 'All';
               renderAll();
+            });
+
+          document
+            .getElementById('deleteActiveCategoryBtn')
+            ?.addEventListener('click', () => {
+              if (state.activeCategory && state.activeCategory.toLowerCase() !== 'all') {
+                openDeleteCategoryModal(state.activeCategory);
+              }
             });
 
           const searchInput = document.getElementById('searchInput');
@@ -1531,11 +1609,23 @@
               const actionEl = e.target.closest('[data-action]');
               if (!actionEl) return;
               const action = actionEl.getAttribute('data-action');
+
+              if (action === 'filter-category') {
+                const cat = actionEl.getAttribute('data-category');
+                if (cat) {
+                  state.activeCategory = cat;
+                  renderAll();
+                }
+                return;
+              }
+
               const id = actionEl.getAttribute('data-id');
               if (!id) return;
 
               if (action === 'copy') {
                 copyPromptToClipboard(id);
+              } else if (action === 'pin') {
+                togglePinPrompt(id);
               } else if (action === 'edit') {
                 const item = state.prompts.find((p) => p.id === id);
                 if (item) openPromptModal(item);

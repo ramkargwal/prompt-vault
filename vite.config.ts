@@ -22,8 +22,14 @@ function syncRootPromptsPlugin() {
     buildStart() {
       syncFile();
     },
-    configureServer() {
+    configureServer(server: {middlewares: {use: (fn: (req: {url?: string}, res: unknown, next: () => void) => void) => void}}) {
       syncFile();
+      server.middlewares.use((req, _res, next) => {
+        if (req.url && req.url.includes('prompts.json')) {
+          syncFile();
+        }
+        next();
+      });
     },
   };
 }
