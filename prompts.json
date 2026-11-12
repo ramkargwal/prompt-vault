@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "exportedAt": "2026-11-11T16:43:46.048Z",
+  "exportedAt": "2026-11-12T12:57:45.783Z",
   "categories": [
     "Github",
     "AI Code",
@@ -9,10 +9,20 @@
   ],
   "prompts": [
     {
+      "id": "prompt-1794488255713",
+      "title": "Theam for webpage",
+      "category": "AI Code",
+      "body": "I want you to apply the exact same visual design theme from my reference webpage to my existing webpage.\n\n**Theme Name: Fresh Aqua Gradient – Modern Minimalist UI**\n\n### 1. Overall Color Palette\nUse this consistent color palette throughout the webpage:\n\n- Primary Background: Soft gradient from Mint Green (#D1FAE5) through Light Cyan (#CFFAFE) to Sky Blue (#BFDBFE).\n- Main Background Gradient: `linear-gradient(to bottom right, #D1FAE5, #CFFAFE, #BFDBFE)`.\n- Card / Panel Background: Pure White (#FFFFFF).\n- Primary Accent: Bright Blue (#3B82F6).\n- Secondary Accent: Cyan (#06B6D4).\n- Main Text: Dark Charcoal (#1F2937).\n- Secondary Text: Gray (#6B7280).\n- Borders: Light Gray (#D1D5DB).\n- Hover Background: Light Gray (#E5E7EB).\n- Focus Ring: Blue (#3B82F6).\n- Success: Green (#10B981).\n- Error: Red (#EF4444).\n\n### 2. Background Design\n- Apply a soft pastel gradient background to the main page.\n- Use a diagonal gradient direction (top-left to bottom-right).\n- Avoid dark, saturated, or harsh background colors.\n- Maintain a bright, clean and refreshing appearance.\n\n### 3. Cards and Containers\n- Use white backgrounds for cards, panels and content sections.\n- Apply rounded corners (8px–12px).\n- Use subtle soft shadows.\n- Add thin light-gray borders where appropriate.\n- Maintain consistent padding and spacing.\n\n### 4. Buttons and Interactive Elements\n- Primary buttons: Bright Blue (#3B82F6) with white text.\n- Hover state: Slightly darker blue (#2563EB).\n- Secondary buttons: Light Gray (#E5E7EB) with dark text.\n- Rounded corners and smooth color transitions.\n- Focus states should use a visible blue ring.\n\n### 5. Input Fields\n- White backgrounds.\n- Light gray borders.\n- Rounded corners.\n- Comfortable padding.\n- Blue focus border and ring.\n- Clearly visible placeholder text.\n\n### 6. Typography\n- Use a clean sans-serif font.\n- Headings: Bold, Dark Charcoal.\n- Body text: Dark Gray.\n- Secondary information: Medium Gray.\n- Maintain clear visual hierarchy.\n\n### 7. Design Consistency\n- Apply the theme consistently to ALL webpage components:\n  Header, Navigation, Sidebar, Cards, Tables, Forms, Modals, Dropdowns, Buttons, Inputs, Charts, Notifications and Footer.\n- Maintain responsive design for desktop, tablet and mobile.\n- Use smooth transitions and subtle hover effects.\n- Ensure sufficient contrast and readability.\n\n### 8. CRITICAL DEVELOPMENT INSTRUCTIONS\n- Do NOT modify existing functionality, JavaScript logic, event listeners, calculations, API calls, or data processing.\n- Do NOT remove, rename or change existing element IDs.\n- Do NOT change the page content or information architecture.\n- Do NOT break existing responsive layouts.\n- Only modify the visual styling, CSS and necessary presentation-related HTML classes.\n- If Tailwind CSS is already used, continue using it.\n- If custom CSS is used, implement the theme using reusable CSS variables.\n\n**Final Goal:** Make my webpage visually consistent with the reference webpage's Fresh Aqua Gradient theme, preserving all existing features and functionality.",
+      "pinned": false,
+      "createdAt": "2026-11-12T12:57:35.713Z",
+      "updatedAt": "2026-11-12T12:57:35.713Z"
+    },
+    {
       "id": "prompt-1794415418193",
       "title": "Plant Texonomy",
       "category": "Botany",
       "body": "भूमिका: आप एक बॉटनी विशेषज्ञ/प्रोफेसर हैं। ऊपर दिए गए पौधे का विस्तृत टैक्सोनॉमिक वर्गीकरण (Taxonomic Classification) प्रदान करें:\n\nमूल विवरण: पौधे का सामान्य/स्थानीय नाम तथा पूर्ण वर्गीकरण पदानुक्रम (Domain → Kingdom → Division → Class → Order → Family → Genus → Species)।\nस्तर-वार व्याख्या (Domain से Species तक):\n\nमुख्य वानस्पतिक विशेषताएँ (Botanical Characteristics)।\nReasoning: इस पौधे को इस रैंक में रखने का तार्किक कारण।\nप्रत्येक स्तर पर 2–3 पंक्तियों का संक्षिप्त सारांश।\nतुलनात्मक तालिका (Markdown Table):\n\nसंरचना: Taxonomic Rank | [मुख्य पौधा] | [स्थानीय पौधा 1] | [2] | [3] | [4]\nशर्त: 4 स्थानीय पौधे हिसार (हरियाणा) की जलवायु के हों और मुख्य पौधे के साथ समान Family साझा करते हों। Domain से Species तक पूर्ण डेटा भरें।\nअतिरिक्त सूची: हिसार (हरियाणा) में पाए जाने वाले इसी Family के अन्य सभी ज्ञात पौधों के केवल नाम (बिना विवरण)।\nभाषा निर्देश: सरल व्याख्यात्मक हिंदी; सभी तकनीकी बॉटनिकल शब्दों के साथ ब्रैकेट में अंग्रेजी नाम (English equivalents) अवश्य लिखें।",
+      "pinned": false,
       "createdAt": "2026-11-11T16:43:38.193Z",
       "updatedAt": "2026-11-11T16:43:38.193Z"
     },
@@ -21,6 +31,7 @@
       "title": "Explain Letter",
       "category": "office letter",
       "body": "आप एक हिंदी भाषा विशेषज्ञ हैं। एक दस्तावेज़ को पढ़कर उसे अत्यंत सरल और संक्षिप्त हिंदी में समझाएं। निम्नलिखित बिंदुओं को शामिल करें:\n1. दस्तावेज़ कब और किसके द्वारा और किसके लिए जारी किया गया है?\n2. इसका विषय और सरल सारांश क्या है?\n3. इसमें दिए गए मुख्य बिंदु क्या हैं?\nजवाब संक्षिप्त, स्पष्ट और ऐसा होना चाहिए कि एक सामान्य व्यक्ति इसे तुरंत समझ सके। जटिल या कानूनी शब्दों को सरल बनाएं और जवाब को कम से कम शब्दों में रखें। अंत में, इसके मुख्य बिंदुओं का एक छोटा नोट 3-4 लाइनों में तैयार करें जिसे सीधे लोगों को समझाने के लिए उपयोग किया जा सके।",
+      "pinned": false,
       "createdAt": "2026-11-11T16:29:20.955Z",
       "updatedAt": "2026-11-11T16:29:20.955Z"
     },
@@ -29,6 +40,7 @@
       "title": "Clean ai code",
       "category": "AI Code",
       "body": "Act as a Senior Software Engineer specialized in code refactoring and optimization. Your task is to conduct a thorough audit of an existing codebase without changing the functionality, design, or user interface. Focus on identifying and removing genuinely unused code, including unused variables, functions, CSS rules, JavaScript code, and other elements listed in the requirements. Additionally, investigate and fix any errors such as JavaScript, HTML, CSS, or runtime errors. Your process must adhere to the following steps: Audit the code, clean up unnecessary parts, fix identified problems, optimize for performance without changing behavior, and preserve 100% existing functionality. Ensure that final testing confirms the project operates as it did originally, maintaining the same features, workflow, and user experience while minimizing errors and improving code quality.",
+      "pinned": false,
       "createdAt": "2026-11-11T15:44:21.619Z",
       "updatedAt": "2026-11-11T15:44:21.619Z"
     },
@@ -37,6 +49,7 @@
       "title": "google ai studio github auto publish",
       "category": "Github",
       "body": "You are a DevOps engineer. Optimize the project for GitHub Pages deployment with the following steps:\n1. Update vite.config.js to include `base: './'` to prevent blank screen errors.\n2. Create a GitHub Actions workflow at `.github/workflows/deploy.yml` using `ubuntu-latest` and `actions/deploy-pages@v4`.\n3. In the actions/setup-node step, ensure `cache: 'npm'` is excluded to avoid crashes if package-lock.json is missing.\n4. Use the command `npm install --legacy-peer-deps` to resolve potential package conflicts.\n5. Generate a standard Vite .gitignore file to avoid uploading temporary files, node_modules, or .env files.\n6. Add README.md file covering all Features",
+      "pinned": false,
       "createdAt": "2026-11-11T15:36:19.125Z",
       "updatedAt": "2026-11-11T15:36:19.125Z"
     }
